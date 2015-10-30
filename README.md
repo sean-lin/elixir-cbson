@@ -1,14 +1,16 @@
 # elixir-cbson
 
+_UNDER CONSTRUCTION_
+
 BSON NIF for Elixir language http://bsonspec.org
 
-## Thanks
+## THANKS
 
 This library has taked many great ideas and codes from [Jiffy](https://github.com/davisp/jiffy) to make it fasting and flexible.
 
 The API of elixir-cbson is the same of as [elixir-bson](https://github.com/checkiz/elixir-bson) which I always used in my project.
 
-## Warring
+## WARNING
 
 * At this moment, elixir-cbson only supports Little-endian machine and I will improve it sometime.
 * Only support Elixir 1.1.0+ 
