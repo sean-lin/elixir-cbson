@@ -8,7 +8,7 @@ BSON NIF for Elixir language http://bsonspec.org
 
 This library has taked many great ideas and codes from [Jiffy](https://github.com/davisp/jiffy) to make it fasting and flexible.
 
-The API of elixir-cbson is the same of as [elixir-bson](https://github.com/checkiz/elixir-bson) which I always used in my project.
+The API of elixir-cbson is the same as [elixir-bson](https://github.com/checkiz/elixir-bson) which I always used in my projects.
 
 ## WARNING
 
@@ -38,7 +38,7 @@ The options for decode are:
   `{:has_trailer, first_term, rest_data::iodata()}`. This is useful to
   decode multiple terms in a single binary.
 * `{:bytes_per_red, n}` where n >= 0 - This controls the number of
-  bytes that Jiffy will process as an equivalent to a reduction. Each
+  bytes that elixir-cbson will process as an equivalent to a reduction. Each
   20 reductions we consume 1% of our allocated time slice for the current
   process. When the Erlang VM indicates we need to return from the NIF.
 
