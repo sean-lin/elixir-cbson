@@ -118,7 +118,7 @@ void dec_init(Decoder* d, ErlNifEnv* env, ERL_NIF_TERM arg, ErlNifBinary* bin) {
     d->env = env;
     d->arg = arg;
 
-    d->p = (char*)bin->data;
+    d->p = (unsigned char*)bin->data;
     d->len = bin->size;
     d->i = 0;
 }
@@ -210,7 +210,7 @@ int make_array(ErlNifEnv* env, ERL_NIF_TERM pairs, ERL_NIF_TERM* out) {
 static inline int read_bson_cstring(
         ErlNifEnv* env, Decoder* d, ERL_NIF_TERM *val, int max_len, int as_integer) {
     int i;
-    char* ptr = d->p + d->i;
+    unsigned char* ptr = d->p + d->i;
    
     for(i=0;;i++) {
         if(i>=max_len){
@@ -221,7 +221,7 @@ static inline int read_bson_cstring(
         }
     }
     if(as_integer) {
-        int n = atoi(ptr);
+        int n = atoi((const char*)ptr);
         *val = enif_make_int(env, n);
     }else{
         *val = enif_make_sub_binary(env, d->arg, d->i, i);
