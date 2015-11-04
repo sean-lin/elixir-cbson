@@ -48,7 +48,7 @@ defmodule CBson do
         iolist
     end
   end
-
+  
   defp nif_decode_init(_data, _opts) do
     exit(:nif_library_not_loaded)
   end
