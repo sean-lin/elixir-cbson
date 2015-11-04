@@ -86,9 +86,7 @@ unsigned char* enc_skip_len(Encoder* e, int32_t len) {
     enc_curr(e)->writed += len;
 
     if(e->i + len > bin->size) {
-        fprintf(stderr, "pik %d\n", len);
         if(e->i < bin->size) {
-            fprintf(stderr, "hit\n");
             enif_realloc_binary(bin, e->i);
         }
         bin = enc_alloc_bin(e); 
