@@ -24,7 +24,7 @@ The API of elixir-cbson is the same as [elixir-bson](https://github.com/checkiz/
 
 The options for decode are:
 
-* `:return_maps` - Return objects using the maps data type.
+* `:return_lists` - Return objects using the lists data type.
 * `:return_atom` - Return objects using atom keys instead of string.
   The internal implementation is using String.to_existing_atom/1, if 
   convertion failed, the string key returned.
