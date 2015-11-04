@@ -6,7 +6,7 @@ BSON NIF for Elixir language http://bsonspec.org
 
 ## THANKS
 
-This library has taked many great ideas and codes from [Jiffy](https://github.com/davisp/jiffy) to make it fasting and flexible.
+This library has taken many great ideas and codes from [Jiffy](https://github.com/davisp/jiffy) to make it fasting and flexible.
 
 The API of elixir-cbson is the same as [elixir-bson](https://github.com/checkiz/elixir-bson) which I always used in my projects.
 
