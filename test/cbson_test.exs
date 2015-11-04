@@ -45,7 +45,7 @@ defmodule CBsonTest do
     assert ret == ctx.term
   end
   
-  test "decode deep", ctx do
+  test "decode deep" do
     term = %{a: %{b: %{c: %{d: %{e: %{f: [[[[[[[[[[[[[[[[[[[[[[[[[[%{z: 0}]]]]]]]]]]]]]]]]]]]]]]]]]]}}}}}}
     bson = Bson.encode(term)
     ret = CBson.decode(bson, [:return_atom])
@@ -58,12 +58,34 @@ defmodule CBsonTest do
   end
 
   test "tc", ctx do
+    _ = Bson.decode(ctx.bson) 
     {t, _} = :timer.tc(fn -> CBson.decode(ctx.bson, [:return_atom]) end)
     IO.puts "CBSON: #{t}"
     {t, _} = :timer.tc(fn -> CBson.decode(ctx.bson) end)
     IO.puts "CBSON not atom: #{t}"
     {t, _} = :timer.tc(fn -> Bson.decode(ctx.bson) end)
     IO.puts "BSON: #{t}"
+  end
+
+  test "encode", ctx do
+    bin = CBson.encode(ctx.term)
+    rbin = Bson.encode(ctx.term)
+    assert bin == rbin
+    assert ctx.term == CBson.decode(bin, [:return_atom]) 
+    
+    {t, _} = :timer.tc(fn -> CBson.encode(ctx.term) end)
+    IO.puts "encode CBSON: #{t}"
+    
+    {t, _} = :timer.tc(fn -> Bson.encode(ctx.term) end)
+    IO.puts "encode BSON: #{t}"
+  end
+
+  test "encode large" do
+    bin = :binary.copy("12345678", 253) <> "1234567"
+    t = [a: bin, b: %{c: 1}]
+    bson = Bson.encode(t)
+    cbson = CBson.encode(t) |> :erlang.iolist_to_binary
+    assert bson == cbson
   end
 
   defp deep(0, acc) do

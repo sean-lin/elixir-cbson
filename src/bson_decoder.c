@@ -17,11 +17,9 @@ typedef struct {
     cbson_st* atoms;
 
     ERL_NIF_TERM arg;
-    ErlNifBinary bin;
 
     size_t bytes_per_red;
-    int is_partial;
-    int return_maps;
+    int return_lists;
     int return_trailer;
     int return_atom;
     ERL_NIF_TERM nil_term;
@@ -35,15 +33,18 @@ typedef struct {
     int st_size;
     int st_top;
 } Decoder;
-
+ 
+static inline
 char dec_curr(Decoder* d) {
     return d->st_data[d->st_top-1];
 }
 
+static inline
 int dec_curr_end(Decoder* d) {
     return d->st_end[d->st_top-1];
 }
 
+static inline
 int dec_top(Decoder* d) {
     return d->st_top;
 }
@@ -70,6 +71,7 @@ void dec_push(Decoder* d, char val, int len) {
     d->st_top++;
 }
 
+static
 void dec_pop(Decoder* d, char val, int len) {
     assert(d->st_data[d->st_top-1] == val && "popped invalid state.");
     assert(d->st_end[d->st_top-1] == len && "popped invalid state.");
@@ -78,11 +80,11 @@ void dec_pop(Decoder* d, char val, int len) {
     d->st_top--;
 }
 
+static
 Decoder* dec_new(ErlNifEnv* env) {
     cbson_st* st = (cbson_st*)enif_priv_data(env);
 
-    Decoder* d = enif_alloc_resource(st->res_dec, sizeof(Decoder));
-    int i;
+    Decoder* d = (Decoder*)enif_alloc_resource(st->res_dec, sizeof(Decoder));
 
     if(d == NULL) {
         return NULL;
@@ -91,8 +93,7 @@ Decoder* dec_new(ErlNifEnv* env) {
     d->atoms = st;
 
     d->bytes_per_red = DEFAULT_BYTES_PER_REDUCTION;
-    d->is_partial = 0;
-    d->return_maps = 1;
+    d->return_lists = 0;
     d->return_atom = 0;
     d->return_trailer = 0;
     d->nil_term = d->atoms->atom_nil;
@@ -106,7 +107,7 @@ Decoder* dec_new(ErlNifEnv* env) {
     d->st_size = STACK_SIZE_INC;
     d->st_top = 0;
 
-    for(i = 0; i < d->st_size; i++) {
+    for(int i = 0; i < d->st_size; i++) {
         d->st_data[i] = st_invalid;
         d->st_end[i] = 0;
     }
@@ -114,6 +115,7 @@ Decoder* dec_new(ErlNifEnv* env) {
     return d;
 }
 
+static
 void dec_init(Decoder* d, ErlNifEnv* env, ERL_NIF_TERM arg, ErlNifBinary* bin) {
     d->env = env;
     d->arg = arg;
@@ -131,23 +133,18 @@ void dec_destroy(ErlNifEnv* env, void* obj) {
     }
 }
 
+static inline
 ERL_NIF_TERM dec_error(Decoder* d, const char* err) {
     return make_error(d->atoms, d->env, err);
 }
 
-ERL_NIF_TERM make_empty_object(ErlNifEnv* env, int ret_map) {
-    if(ret_map) {
-        return enif_make_new_map(env);
-    }
-    return enif_make_tuple1(env, enif_make_list(env, 0));
-}
-
-int make_object(ErlNifEnv* env, ERL_NIF_TERM pairs, ERL_NIF_TERM* out, int ret_map, int ret_atom) {
+static 
+int make_object(ErlNifEnv* env, ERL_NIF_TERM pairs, ERL_NIF_TERM* out, int ret_lists, int ret_atom) {
     ERL_NIF_TERM ret;
     ERL_NIF_TERM key;
     ERL_NIF_TERM val;
 
-    if(ret_map) {
+    if(!ret_lists) {
         ret = enif_make_new_map(env);
         while(enif_get_list_cell(env, pairs, &val, &pairs)) {
             if(!enif_get_list_cell(env, pairs, &key, &pairs)) {
@@ -177,6 +174,7 @@ int make_object(ErlNifEnv* env, ERL_NIF_TERM pairs, ERL_NIF_TERM* out, int ret_m
     return 1;
 }
 
+static
 int make_array(ErlNifEnv* env, ERL_NIF_TERM pairs, ERL_NIF_TERM* out) {
     int i = -1;
     int ki;
@@ -207,7 +205,8 @@ int make_array(ErlNifEnv* env, ERL_NIF_TERM pairs, ERL_NIF_TERM* out) {
     return 1;
 }
 
-static inline int read_bson_cstring(
+static inline 
+int read_bson_cstring(
         ErlNifEnv* env, Decoder* d, ERL_NIF_TERM *val, int max_len, int as_integer) {
     int i;
     unsigned char* ptr = d->p + d->i;
@@ -230,7 +229,8 @@ static inline int read_bson_cstring(
     return 1;
 }
 
-static inline ERL_NIF_TERM read_bson_objectid(ErlNifEnv* env, Decoder* d) {
+static inline 
+ERL_NIF_TERM read_bson_objectid(ErlNifEnv* env, Decoder* d) {
     ERL_NIF_TERM ret = enif_make_new_map(env);
     enif_make_map_put(env, ret, d->atoms->atom_struct, d->atoms->atom_objectid, &ret);
 
@@ -241,7 +241,8 @@ static inline ERL_NIF_TERM read_bson_objectid(ErlNifEnv* env, Decoder* d) {
     return ret;
 }
 
-static inline ERL_NIF_TERM read_bson_binary(ErlNifEnv* env, Decoder* d, uint8_t subtype, int32_t len) {
+static inline 
+ERL_NIF_TERM read_bson_binary(ErlNifEnv* env, Decoder* d, uint8_t subtype, int32_t len) {
     ERL_NIF_TERM ret = enif_make_new_map(env);
     enif_make_map_put(env, ret, d->atoms->atom_struct, d->atoms->atom_bin, &ret);
 
@@ -262,7 +263,8 @@ static inline ERL_NIF_TERM read_bson_binary(ErlNifEnv* env, Decoder* d, uint8_t 
     return ret;
 }
 
-static inline ERL_NIF_TERM read_bson_utc(ErlNifEnv* env, Decoder* d, int64_t timestamp) {
+static inline 
+ERL_NIF_TERM read_bson_utc(ErlNifEnv* env, Decoder* d, int64_t timestamp) {
     ERL_NIF_TERM ret = enif_make_new_map(env);
     enif_make_map_put(env, ret, d->atoms->atom_struct, d->atoms->atom_utc, &ret);
     enif_make_map_put(
@@ -305,8 +307,8 @@ ERL_NIF_TERM decode_init(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     while(enif_get_list_cell(env, opts, &val, &opts)) {
         if(get_bytes_per_iter(env, val, &(d->bytes_per_red))) {
             continue;
-        } else if(enif_compare(val, d->atoms->atom_return_maps) == 0) {
-            d->return_maps = 1;
+        } else if(enif_compare(val, d->atoms->atom_return_lists) == 0) {
+            d->return_lists = 1;
         } else if(enif_compare(val, d->atoms->atom_return_trailer) == 0) {
             d->return_trailer = 1;
         } else if(enif_compare(val, d->atoms->atom_return_atom) == 0) {
@@ -393,7 +395,7 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
         d->i++;
         if(type == 0x0 && st_end == d->i - 1) {
             if(curr_stack == st_doc) {
-                if(!make_object(env, curr, &val, d->return_maps, d->return_atom)) {
+                if(!make_object(env, curr, &val, d->return_lists, d->return_atom)) {
                     ret = dec_error(d, "internal_error1");
                     goto done;
                 }

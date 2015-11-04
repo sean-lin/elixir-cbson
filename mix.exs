@@ -1,3 +1,12 @@
+defmodule Mix.Tasks.Compile.NIF do
+  @shortdoc "Compiles sass library"
+  def run(_) do
+    if Mix.shell.cmd("make nif") != 0 do
+      raise Mix.Error, message: "could not run `make nif`."
+    end
+  end
+end
+
 defmodule Cbson.Mixfile do
   use Mix.Project
 
@@ -7,7 +16,7 @@ defmodule Cbson.Mixfile do
      elixir: "~> 1.1",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     nifs: nifs,
+     compilers: [:NIF, :elixir, :app, :erlang],
      deps: deps]
   end
 
@@ -31,9 +40,5 @@ defmodule Cbson.Mixfile do
     [
       {:bson, "~> 0.4.0", only: :test},
     ]
-  end
-
-  defp nifs do
-    %{cbson: {"src/decoder.c", []}}
   end
 end

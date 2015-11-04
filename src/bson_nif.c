@@ -7,7 +7,7 @@ static int load(ErlNifEnv* env, void** priv, ERL_NIF_TERM info) {
         return 1;
     }
 
-#define MA(a,b) (st->a=make_atom(env, b))
+#define MA(a,b) (st->a= make_atom(env, (b)))
 
     MA(atom_ok,             "ok");
     MA(atom_error,          "error");
@@ -18,7 +18,7 @@ static int load(ErlNifEnv* env, void** priv, ERL_NIF_TERM info) {
     MA(atom_force_utf8,     "force_utf8");
     MA(atom_iter,           "iter");
     MA(atom_bytes_per_iter, "bytes_per_iter");
-    MA(atom_return_maps,    "return_maps");
+    MA(atom_return_lists,    "return_lists");
     MA(atom_return_trailer, "return_trailer");
     MA(atom_has_trailer,    "has_trailer");
     MA(atom_return_atom,    "return_atom");
@@ -77,7 +77,7 @@ static ErlNifFunc funcs[] = {
     {"nif_decode_init", 2, decode_init},
     {"nif_decode_iter", 5, decode_iter},
     {"nif_encode_init", 2, encode_init},
-    {"nif_encode_iter", 3, encode_iter}
+    {"nif_encode_iter", 2, encode_iter}
 };
 
 ERL_NIF_INIT(Elixir.CBson, funcs, &load, &reload, &upgrade, &unload);

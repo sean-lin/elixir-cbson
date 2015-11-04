@@ -6,18 +6,23 @@ defmodule CBson do
     :ok = :erlang.load_nif(path, 0)
   end
 
+  def encode(data) do
+    encode(data, [])
+  end
+
   def decode(data) do
     decode(data, [])
   end
 
   def decode(data, opts) when is_binary(data) and is_list(opts) do
     case nif_decode_init(data, opts) do
-        {:error, _} = error ->
-            throw(error);
-        {:iter, decoder, val, objs, curr} ->
-            decode_loop(data, decoder, val, objs, curr);
-        bson ->
-            bson
+      {:error, _} = error ->
+        throw(error)
+      {:iter, decoder, val, objs, curr} ->
+        IO.inspect "loop"
+        decode_loop(data, decoder, val, objs, curr);
+      bson ->
+        bson
     end
   end
   def decode(data, opts) when is_list(data) do
@@ -26,12 +31,21 @@ defmodule CBson do
 
   defp decode_loop(data, decoder, val, objs, curr) do
     case nif_decode_iter(data, decoder, val, objs, curr) do
-        {:error, _} = error ->
-            throw(error);
-        {:iter, decoder, val, objs, curr} ->
-            decode_loop(data, decoder, val, objs, curr);
-        bson ->
-            bson
+      {:error, _} = error ->
+        throw(error);
+      {:iter, decoder, val, objs, curr} ->
+        decode_loop(data, decoder, val, objs, curr);
+      bson ->
+        bson
+    end
+  end
+  
+  def encode(data, opts) when is_list(opts) do
+    case nif_encode_init(data, opts) do
+      {:error, _} = error ->
+        throw(error)
+      iolist ->
+        iolist
     end
   end
 
@@ -47,7 +61,7 @@ defmodule CBson do
     exit(:nif_library_not_loaded)
   end
 
-  def nif_encode_iter(_encoder, _stack, _iolist) do
+  def nif_encode_iter(_encoder, _stack) do
     exit(:nif_library_not_loaded)
   end
 end
