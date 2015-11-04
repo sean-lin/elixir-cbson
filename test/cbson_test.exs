@@ -69,9 +69,7 @@ defmodule CBsonTest do
 
   test "encode", ctx do
     bin = CBson.encode(ctx.term)
-    rbin = Bson.encode(ctx.term)
-    assert bin == rbin
-    assert ctx.term == CBson.decode(bin, [:return_atom]) 
+    assert bin == ctx.bson 
     
     {t, _} = :timer.tc(fn -> CBson.encode(ctx.term) end)
     IO.puts "encode CBSON: #{t}"
@@ -82,7 +80,7 @@ defmodule CBsonTest do
 
   test "encode large" do
     bin = :binary.copy("12345678", 253) <> "1234567"
-    t = [a: bin, b: %{c: 1}]
+    t = [a: bin, b: %{c: 1}, c: []]
     bson = Bson.encode(t)
     cbson = CBson.encode(t) |> :erlang.iolist_to_binary
     assert bson == cbson

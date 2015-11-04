@@ -112,19 +112,18 @@ void enc_string(Encoder* e, unsigned char* data, int32_t size) {
 
 static inline
 int enc_atom(Encoder* e, ERL_NIF_TERM val) {
-    unsigned char atom[512];
+    char atom[512];
     if(!enif_get_atom(e->env, val, atom, 512, ERL_NIF_LATIN1)) {
         return 0;
     }
-    unsigned char* data = (unsigned char*) atom;
-    int32_t size = strlen(data);
-    enc_string(e, data, size);
+    int32_t size = strlen(atom);
+    enc_string(e, (unsigned char*)atom, size);
     return 1;
 }
 
 static 
 int enc_ename(Encoder* e, ERL_NIF_TERM val) {
-    unsigned char atom[512];
+    char atom[512];
     ErlNifBinary bin;
 
     if(enif_is_binary(e->env, val)) {
@@ -137,9 +136,8 @@ int enc_ename(Encoder* e, ERL_NIF_TERM val) {
         if(!enif_get_atom(e->env, val, atom, 512, ERL_NIF_LATIN1)) {
             return 0;
         }
-        unsigned char* data = (unsigned char*) atom;
-        int32_t size = strlen(data);
-        enc_write_bin(e, data, size);
+        int32_t size = strlen(atom);
+        enc_write_bin(e, (unsigned char*) atom, size);
         enc_write_uint8(e, 0x0);
     } else {
         return 0;
@@ -149,9 +147,9 @@ int enc_ename(Encoder* e, ERL_NIF_TERM val) {
 
 static inline
 void enc_idx_ename(Encoder* e, int32_t val) {
-    unsigned char str[32];
+    char str[32];
     int len = snprintf(str, 32, "%d", val);
-    enc_write_bin(e, str, len + 1);
+    enc_write_bin(e, (unsigned char*)str, len + 1);
 }
 
 static inline 
@@ -215,7 +213,7 @@ Stack* enc_curr(Encoder* e) {
 }
 
 static
-uint32_t * enc_push(Encoder* e, int32_t status) {
+int32_t * enc_push(Encoder* e, int32_t status) {
     Stack* st;
 
     if(e->st_top >= e->st_size) {
@@ -232,7 +230,7 @@ uint32_t * enc_push(Encoder* e, int32_t status) {
     st->writed = 0;
     e->st_top++;
     
-    st->ptr = (uint32_t*)enc_skip_len(e, sizeof(uint32_t));
+    st->ptr = (int32_t*)enc_skip_len(e, sizeof(int32_t));
     return st->ptr;
 }
 
@@ -531,7 +529,7 @@ next:
         } else if(enif_is_list(env, value)) {
             if(enif_is_empty_list(env, value)) {
                 *ptr = BSON_ARRAY;
-                enc_write_bin(e, "\5\0\0\0\0", 5);
+                enc_write_bin(e, (uint8_t*)"\5\0\0\0\0", 5);
             } else {
                 stack = enif_make_list_cell(env, curr, stack);
                 
