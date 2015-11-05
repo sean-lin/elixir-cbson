@@ -37,6 +37,9 @@ defmodule Cbson.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [ ]
+    [ 
+      {:benchfella, "~> 0.2.0", only: :bench},
+      {:mongodb, "~> 0.1.0", only: :bench},
+    ]
   end
 end
