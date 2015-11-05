@@ -264,6 +264,17 @@ ERL_NIF_TERM read_bson_binary(ErlNifEnv* env, Decoder* d, uint8_t subtype, int32
 }
 
 static inline 
+ERL_NIF_TERM read_bson_timestamp(ErlNifEnv* env, Decoder* d, int64_t timestamp) {
+    ERL_NIF_TERM ret = enif_make_new_map(env);
+    enif_make_map_put(env, ret, d->atoms->atom_struct, d->atoms->atom_timestamp, &ret);
+    enif_make_map_put(
+            env, ret, 
+            d->atoms->atom_timestamp_value, enif_make_int64(env, timestamp), 
+            &ret);
+    return ret;
+}
+
+static inline 
 ERL_NIF_TERM read_bson_utc(ErlNifEnv* env, Decoder* d, int64_t timestamp) {
     ERL_NIF_TERM ret = enif_make_new_map(env);
     enif_make_map_put(env, ret, d->atoms->atom_struct, d->atoms->atom_utc, &ret);
@@ -488,8 +499,8 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
                     break;
                 case BSON_UTC:
                     ASSERT_LEN(d, 8, "invalid_utc");
-                    int64_t ts = *(int64_t*)(d->p + d->i);
-                    val = read_bson_utc(env, d, ts);
+                    int64_t ms = *(int64_t*)(d->p + d->i);
+                    val = read_bson_utc(env, d, ms);
                     d->i += 8;
                     break;
                 case BSON_NULL:
@@ -508,6 +519,10 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
                     d->i += 4;    
                     break;
                 case BSON_TIMESTAMP:
+                    ASSERT_LEN(d, 8, "invalid_timestamp");
+                    int64_t ts = *(int64_t*)(d->p + d->i);
+                    val = read_bson_timestamp(env, d, ts);
+                    d->i += 8;
                     break;
                 case BSON_INT64:
                     ASSERT_LEN(d, 8, "invalid_int64");

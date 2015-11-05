@@ -31,7 +31,7 @@ defmodule CBsonTest do
       m:  nil,
       q1: -2000444000,
       q2: -8000111000222001,
-      #r:  %Bson.Timestamp{inc: 1, ts: 2},
+      r:  %Bson.Timestamp{ts: 2},
       s1: :min_key,
       s2: :max_key,
       t: Bson.ObjectId.from_string("52e0e5a10000020003000004")

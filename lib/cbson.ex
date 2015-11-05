@@ -19,7 +19,6 @@ defmodule CBson do
       {:error, _} = error ->
         throw(error)
       {:iter, decoder, val, objs, curr} ->
-        IO.inspect "loop"
         decode_loop(data, decoder, val, objs, curr);
       bson ->
         bson

@@ -180,6 +180,19 @@ int enc_utc(Encoder* e, ERL_NIF_TERM doc) {
 }
 
 static inline 
+int enc_timestamp(Encoder* e, ERL_NIF_TERM doc) {
+    ERL_NIF_TERM ts;
+    ErlNifSInt64 ms;
+    if(enif_get_map_value(e->env, doc, e->atoms->atom_timestamp_value, &ts)) {
+        if(enif_get_int64(e->env, ts, &ms)) {
+            int64_t ims = ms;
+            return enc_write_bin(e, (unsigned char*)&ims, sizeof(ims));
+        }
+    }
+    return 0;
+}
+
+static inline 
 int enc_bin(Encoder* e, ERL_NIF_TERM doc) {
     ERL_NIF_TERM val;
     ErlNifBinary bin;
@@ -503,6 +516,12 @@ next:
                 } else if(enif_compare(key, st->atom_utc) == 0) {
                     *ptr = BSON_UTC;
                     if(!enc_utc(e, value)) {
+                        ret = enc_obj_error(e, "error_utc", value);
+                        goto done;
+                    }
+                } else if(enif_compare(key, st->atom_timestamp) == 0) {
+                    *ptr = BSON_TIMESTAMP;
+                    if(!enc_timestamp(e, value)) {
                         ret = enc_obj_error(e, "error_utc", value);
                         goto done;
                     }

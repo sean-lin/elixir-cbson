@@ -40,8 +40,8 @@
 #define ATOM_UTC_VALUE      "ms"
 #define ATOM_REGEX          "Elixir.Bson.Regex"
 #define ATOM_JS             "Elixir.Bson.JS"
-#define ATOM_JS_WS          "Elixir.Bson.JS"
 #define ATOM_TIMESTAMP      "Elixir.Bson.Timestamp"
+#define ATOM_TS_VALUE       "ts"
 #define ATOM_BSON_MIN       "min_key"
 #define ATOM_BSON_MAX       "max_key"
 #define ATOM_BIN            "Elixir.Bson.Bin"
@@ -75,8 +75,8 @@ typedef struct {
     ERL_NIF_TERM atom_utc_value;
     ERL_NIF_TERM atom_regex;
     ERL_NIF_TERM atom_js;
-    ERL_NIF_TERM atom_js_ws;
     ERL_NIF_TERM atom_timestamp;
+    ERL_NIF_TERM atom_timestamp_value;
     ERL_NIF_TERM atom_bson_min;
     ERL_NIF_TERM atom_bson_max;
     ERL_NIF_TERM atom_bin;
