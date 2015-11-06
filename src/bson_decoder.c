@@ -4,7 +4,7 @@
 
 #include "cbson.h"
 
-#define STACK_SIZE_INC 64
+#define STACK_SIZE_INC 32
 
 enum {
     st_doc=0,

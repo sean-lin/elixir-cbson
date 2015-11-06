@@ -3,10 +3,10 @@
 #include <string.h>
 #include "cbson.h"
 
-#define BIN_ARRAY_SIZE 32
+#define BIN_ARRAY_SIZE 16
 #define BIN_BLOCK_SIZE 2048
 
-#define STACK_SIZE_INC 64
+#define STACK_SIZE_INC 32
 
 typedef struct {
     int32_t status; // negative: doc, nonnegative: index of array
