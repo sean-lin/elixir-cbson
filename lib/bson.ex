@@ -1,3 +1,4 @@
+if Mix.env != :bench do
 defmodule Bson do
   @moduledoc """
   `Bson` provides encoding and decoding function for Bson format
@@ -245,4 +246,5 @@ defmodule Bson do
   
   defdelegate decode(term), to: CBson
   defdelegate decode(term, opts), to: CBson
+end
 end

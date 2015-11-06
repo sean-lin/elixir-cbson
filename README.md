@@ -15,6 +15,11 @@ The API of elixir-cbson is the same as [elixir-bson](https://github.com/checkiz/
 * At this moment, elixir-cbson only supports Little-endian machine and I will improve it sometime.
 * Only support Elixir 1.1.0+ 
 
+## MongoDB Driver
+The MongodB driver using this project is [here](https://github.com/ejoy/elixir-mongo/tree/cbson), 
+being changed from [elixir-mongo](https://github.com/checkiz/elixir-mongo).
+
+
 ## Usage
 
 ### `CBson.decode/1,2`
@@ -24,7 +29,7 @@ The API of elixir-cbson is the same as [elixir-bson](https://github.com/checkiz/
 
 The options for decode are:
 
-* `:return_lists` - Return objects using the lists data type.
+* `:return_lists` - Return objects using the lists data(keywrods) type.
 * `:return_atom` - Return objects using atom keys instead of string.
   The internal implementation is using String.to_existing_atom/1, if 
   convertion failed, the string key returned.
@@ -59,4 +64,31 @@ The options for encode are:
 * `:use_null` - Returns the atom `null` instead of `nil` when decoding
   BSON. This is a short hand for `{nil_term, null}`.
 * `{:bytes_per_red, n}` - Refer to the decode options
+
+## Types
+
+BSON Type | Elixir Type       | Notes
+----------|-------------------|-----------------------
+double    | double            |
+string    | string            |
+doc       | map or keywrods   | :return_lists
+array     | list              |
+binary    | %Bson.Bin{}       |
+bool      | atom: true/false  |
+datetime  | %Bson.UTC{}       |
+Null      | nil               | :use_null/:nil_term
+Regex     |                   | not supported
+JavaScript|                   | not supported
+int32     | integer           |
+Timestamp | %Bson.Timestamp{} |
+int64     | integer           |
+Min key   | atom: min_key     |
+Max key   | atom: max_key     |
+
+
+## Benchmarking
+There're some benchmark cases vs [mongodb](https://github.com/ericmj/mongodb) & [elixir-bson](https://github.com/checkiz/elixir-bson)
+```
+MIX_ENV=bench mix bench
+```
 

@@ -222,7 +222,11 @@ defmodule DecodBench do
     bson |> Enum.map(&CBson.decode/1)
   end
   
-  bench "decoder(posion)", [bson: Data.get_bson()] do
+  bench "decoder(bson)", [bson: Data.get_bson()] do
+    bson |> Enum.map(&Bson.decode/1)
+  end
+  
+  bench "decoder(BSON)", [bson: Data.get_bson()] do
     bson |> Enum.map(&BSON.decode/1)
   end
 end
@@ -234,7 +238,11 @@ defmodule EncodeBench do
     bson |> Enum.map(&CBson.encode/1)
   end
   
-  bench "encode(posion)", [bson: get_posion()] do
+  bench "encode(bson)", [bson: get_bson()] do
+    bson |> Enum.map(&Bson.encode/1)
+  end
+  
+  bench "encode(BSON)", [bson: get_BSON()] do
     bson |> Enum.map(&BSON.encode/1)
   end
 
@@ -242,7 +250,7 @@ defmodule EncodeBench do
     Data.get_bson |> Enum.map(&CBson.decode/1)
   end
 
-  defp get_posion() do
+  defp get_BSON() do
     Data.get_bson() |> Enum.map(&BSON.decode/1)
   end
 end

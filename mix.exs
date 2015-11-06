@@ -40,6 +40,7 @@ defmodule Cbson.Mixfile do
     [ 
       {:benchfella, "~> 0.2.0", only: :bench},
       {:mongodb, "~> 0.1.0", only: :bench},
+      {:bson, "~> 0.4.4", only: :bench},
     ]
   end
 end
