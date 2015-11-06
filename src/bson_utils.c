@@ -15,9 +15,8 @@ int make_atom_by_binary(ErlNifEnv* env, ERL_NIF_TERM* in, ERL_NIF_TERM* out) {
         return 0; 
     }
     if(!enif_make_existing_atom_len(env, (const char*)bin.data, bin.size, out, ERL_NIF_LATIN1)) {
-        return 0;
+        *out = *in;
     }
-    *out = *in;
     return 1;
 }
 
