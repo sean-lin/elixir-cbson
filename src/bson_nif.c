@@ -18,7 +18,7 @@ static int load(ErlNifEnv* env, void** priv, ERL_NIF_TERM info) {
     MA(atom_force_utf8,     "force_utf8");
     MA(atom_iter,           "iter");
     MA(atom_bytes_per_iter, "bytes_per_iter");
-    MA(atom_return_lists,    "return_lists");
+    MA(atom_return_lists,   "return_lists");
     MA(atom_return_trailer, "return_trailer");
     MA(atom_has_trailer,    "has_trailer");
     MA(atom_return_atom,    "return_atom");

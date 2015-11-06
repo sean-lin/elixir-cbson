@@ -345,7 +345,7 @@ ERL_NIF_TERM decode_init(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     d->i += 4;
     int32_t end = d->i + len - 5;
 
-    if(end + 1 != d->len || d->p[end] != 0x0) {
+    if(end + 1 > d->len || d->p[end] != 0x0) {
         return make_error(st, env, "invalid_bson");
     }
     dec_push(d, st_doc, end);

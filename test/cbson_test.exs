@@ -69,6 +69,13 @@ defmodule CBsonTest do
     assert byte_size(cbson) == 2067
   end
 
+  test "decode trailer" do
+    t = %{"a"=> 1}
+    bin = :binary.copy(CBson.encode(t), 2)
+    assert {:has_trailer, ^t, rest} = CBson.decode(bin, [:return_trailer])
+    assert t == CBson.decode(rest, [:return_trailer])
+  end
+
   defp deep(0, acc) do
     acc
   end
