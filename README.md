@@ -69,7 +69,7 @@ BSON Type | Elixir Type       | Notes
 ----------|-------------------|-----------------------
 double    | double            |
 string    | string            |
-doc       | map or keywrods   | :return_lists
+doc       | map or keywords   | :return_lists
 array     | list              |
 binary    | %Bson.Bin{}       |
 bool      | atom: true/false  |
