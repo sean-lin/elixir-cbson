@@ -180,6 +180,25 @@ int enc_utc(Encoder* e, ERL_NIF_TERM doc) {
 }
 
 static inline 
+int enc_regex(Encoder* e, ERL_NIF_TERM doc) {
+    ERL_NIF_TERM val;
+    ErlNifBinary bin;
+
+    if(enif_get_map_value(e->env, doc, e->atoms->atom_regex_pattern, &val) \
+            && enif_inspect_binary(e->env, val, &bin)) {
+        enc_write_bin(e, bin.data, bin.size);
+        enc_write_uint8(e, 0x0);
+        if(enif_get_map_value(e->env, doc, e->atoms->atom_regex_opts, &val)\
+                && enif_inspect_binary(e->env, val, &bin)) {
+            enc_write_bin(e, bin.data, bin.size);
+            enc_write_uint8(e, 0x0);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static inline 
 int enc_timestamp(Encoder* e, ERL_NIF_TERM doc) {
     ERL_NIF_TERM ts;
     ErlNifSInt64 ms;
@@ -295,12 +314,22 @@ Encoder* enc_new(ErlNifEnv* env) {
 }
 
 void enc_destroy(ErlNifEnv* env, void* obj) {
+    int i; 
     Encoder* e = (Encoder*)obj;
-    
+
     if(e->st_data != NULL) {
+        for(i = 0; i < e->st_top; i++) {
+            Stack* st = e->st_data + i;
+            if(!enc_is_list(st)) {
+                enif_map_iterator_destroy(env, &(st->iter));
+            }
+        }
         enif_free(e->st_data);
     }
     if(e->bin != NULL) {
+        for(i = 0; i < e->bin_top; i++) {
+            enif_release_binary(e->bin + i);
+        }
         enif_free(e->bin);
     }
 }
@@ -312,7 +341,7 @@ ERL_NIF_TERM enc_error(Encoder* e, const char* err) {
 
 static inline
 ERL_NIF_TERM enc_obj_error(Encoder* e, const char* err, ERL_NIF_TERM obj) {
-    return make_error(e->atoms, e->env, err);
+    return make_obj_error(e->atoms, e->env, err, obj);
 }
 
 static inline
@@ -329,6 +358,7 @@ static
 ERL_NIF_TERM make_result(ErlNifEnv* env, Encoder* e) {
     ERL_NIF_TERM last = make_last(env, e);
     if(e->bin_top == 1) {
+        e->bin_top = 0;
         return last;
     }
 
@@ -519,16 +549,22 @@ next:
                         ret = enc_obj_error(e, "error_utc", value);
                         goto done;
                     }
-                } else if(enif_compare(key, st->atom_timestamp) == 0) {
-                    *ptr = BSON_TIMESTAMP;
-                    if(!enc_timestamp(e, value)) {
-                        ret = enc_obj_error(e, "error_utc", value);
-                        goto done;
-                    }
                 } else if(enif_compare(key, st->atom_bin) == 0) {
                     *ptr = BSON_BINARY;
                     if(!enc_bin(e, value)) {
                         ret = enc_obj_error(e, "error_bin", value);
+                        goto done;
+                    }
+                } else if(enif_compare(key, st->atom_regex) == 0) {
+                    *ptr = BSON_REGEX;
+                    if(!enc_regex(e, value)) {
+                        ret = enc_obj_error(e, "error_regex", value);
+                        goto done;
+                    }
+                } else if(enif_compare(key, st->atom_timestamp) == 0) {
+                    *ptr = BSON_TIMESTAMP;
+                    if(!enc_timestamp(e, value)) {
+                        ret = enc_obj_error(e, "error_timestamp", value);
                         goto done;
                     }
                 } else {
@@ -565,6 +601,9 @@ next:
                 stack = enif_make_list_cell(env, value, stack);
                 continue;
             }
+        } else {
+            ret = enc_obj_error(e, "error_term", value);
+            goto done;
         }
         goto next;
     }

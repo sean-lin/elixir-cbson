@@ -229,6 +229,25 @@ int read_bson_cstring(
     return 1;
 }
 
+static inline
+int read_bson_regex(ErlNifEnv* env, Decoder* d, int st_end, ERL_NIF_TERM* val) {
+    ERL_NIF_TERM cstr;
+    
+    *val = enif_make_new_map(env);
+    enif_make_map_put(env, *val, d->atoms->atom_struct, d->atoms->atom_regex, val);
+
+    if(!read_bson_cstring(env, d, &cstr, st_end - d->i, 0)) {
+        return 0;
+    }
+    enif_make_map_put(env, *val, d->atoms->atom_regex_pattern, cstr, val);
+    
+    if(!read_bson_cstring(env, d, &cstr, st_end - d->i, 0)) {
+        return 0;
+    }
+    enif_make_map_put(env, *val, d->atoms->atom_regex_opts, cstr, val);
+    return 1; 
+}
+
 static inline 
 ERL_NIF_TERM read_bson_objectid(ErlNifEnv* env, Decoder* d) {
     ERL_NIF_TERM ret = enif_make_new_map(env);
@@ -507,10 +526,10 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
                     val = d->nil_term;
                     break;
                 case BSON_REGEX:
-                    break;
-                case BSON_JS:
-                    break;
-                case BSON_JS_WS:
+                    if(!read_bson_regex(env, d, st_end, &val)) {
+                        ret = dec_error(d, "invalid_regex");
+                        goto done;
+                    }
                     break;
                 case BSON_INT32:
                     ASSERT_LEN(d, 4, "invalid_int32");
@@ -536,6 +555,8 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
                 case BSON_MAX:
                     val = d->atoms->atom_bson_max;
                     break;
+                case BSON_JS:
+                case BSON_JS_WS:
                 default:
                     ret = dec_error(d, "invalid_type");
                     goto done;

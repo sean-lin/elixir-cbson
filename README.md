@@ -1,7 +1,5 @@
 # elixir-cbson
 
-_UNDER CONSTRUCTION_
-
 BSON NIF for Elixir language http://bsonspec.org
 
 ## THANKS
@@ -77,7 +75,7 @@ binary    | %Bson.Bin{}       |
 bool      | atom: true/false  |
 datetime  | %Bson.UTC{}       |
 Null      | nil               | :use_null/:nil_term
-Regex     |                   | not supported
+Regex     | %Bson.Regex{}     | 
 JavaScript|                   | not supported
 int32     | integer           |
 Timestamp | %Bson.Timestamp{} |

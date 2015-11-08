@@ -29,6 +29,7 @@ defmodule CBsonTest do
       k2: true,
       l:  Bson.UTC.from_now({1390, 470561, 277000}),
       m:  nil,
+      n:  %Bson.Regex{pattern: "p", opts: "o"},
       q1: -2000444000,
       q2: -8000111000222001,
       r:  %Bson.Timestamp{ts: 2},
@@ -83,6 +84,18 @@ defmodule CBsonTest do
     101, 114, 114, 0, 1, 111, 107, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0>>
     assert %{ok: 1.0} = CBson.decode(bin, [:return_atom])
   end
+
+  test "encode fail" do
+    t = %{a: [1, {2, 3}]}
+    error = catch_throw CBson.encode(t)
+    assert {:error, {:error_term, {2, 3}}} == error
+  end
+
+  test "regex" do
+    t = %{ n:  %Bson.Regex{pattern: "p", opts: "o"},}
+    assert t == CBson.encode(t) |> CBson.decode([:return_atom])
+  end
+
   defp deep(0, acc) do
     acc
   end

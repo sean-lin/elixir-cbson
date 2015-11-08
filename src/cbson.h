@@ -34,19 +34,21 @@
 
 #ifndef ERICMJ_MONGODB
 
-#define ATOM_OBJECTID       "Elixir.Bson.ObjectId"
-#define ATOM_OBJECTID_VALUE "oid"
-#define ATOM_UTC            "Elixir.Bson.UTC"
-#define ATOM_UTC_VALUE      "ms"
-#define ATOM_REGEX          "Elixir.Bson.Regex"
-#define ATOM_JS             "Elixir.Bson.JS"
-#define ATOM_TIMESTAMP      "Elixir.Bson.Timestamp"
-#define ATOM_TS_VALUE       "ts"
-#define ATOM_BSON_MIN       "min_key"
-#define ATOM_BSON_MAX       "max_key"
-#define ATOM_BIN            "Elixir.Bson.Bin"
-#define ATOM_BIN_VALUE      "bin"
-#define ATOM_BIN_SUBTYPE    "subtype"
+#define ATOM_OBJECTID           "Elixir.Bson.ObjectId"
+#define ATOM_OBJECTID_VALUE     "oid"
+#define ATOM_UTC                "Elixir.Bson.UTC"
+#define ATOM_UTC_VALUE          "ms"
+#define ATOM_REGEX              "Elixir.Bson.Regex"
+#define ATOM_REGEX_PATTERN      "pattern"
+#define ATOM_REGEX_OPTS         "opts"
+#define ATOM_JS                 "Elixir.Bson.JS"
+#define ATOM_TIMESTAMP          "Elixir.Bson.Timestamp"
+#define ATOM_TS_VALUE           "ts"
+#define ATOM_BSON_MIN           "min_key"
+#define ATOM_BSON_MAX           "max_key"
+#define ATOM_BIN                "Elixir.Bson.Bin"
+#define ATOM_BIN_VALUE          "bin"
+#define ATOM_BIN_SUBTYPE        "subtype"
 #else
 
 #endif // ERICMJ_MONGODB
@@ -74,6 +76,8 @@ typedef struct {
     ERL_NIF_TERM atom_utc;
     ERL_NIF_TERM atom_utc_value;
     ERL_NIF_TERM atom_regex;
+    ERL_NIF_TERM atom_regex_pattern;
+    ERL_NIF_TERM atom_regex_opts;
     ERL_NIF_TERM atom_js;
     ERL_NIF_TERM atom_timestamp;
     ERL_NIF_TERM atom_timestamp_value;
@@ -90,6 +94,7 @@ typedef struct {
 ERL_NIF_TERM make_atom(ErlNifEnv* env, const char* name);
 int make_atom_by_binary(ErlNifEnv* env, ERL_NIF_TERM* out, ERL_NIF_TERM* bin);
 ERL_NIF_TERM make_error(cbson_st* st, ErlNifEnv* env, const char* error);
+ERL_NIF_TERM make_obj_error(cbson_st* st, ErlNifEnv* env, const char* error, ERL_NIF_TERM obj);
 int get_bytes_per_iter(ErlNifEnv* env, ERL_NIF_TERM val, size_t* bpi);
 int get_nil_term(ErlNifEnv* env, ERL_NIF_TERM val, ERL_NIF_TERM *nil_term);
 int should_yield(ErlNifEnv* env, int* start, int end, size_t bytes_per_red);

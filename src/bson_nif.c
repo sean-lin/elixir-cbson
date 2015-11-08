@@ -31,6 +31,8 @@ static int load(ErlNifEnv* env, void** priv, ERL_NIF_TERM info) {
     MA(atom_utc, ATOM_UTC);
     MA(atom_utc_value, ATOM_UTC_VALUE);
     MA(atom_regex, ATOM_REGEX);
+    MA(atom_regex_pattern, ATOM_REGEX_PATTERN);
+    MA(atom_regex_opts, ATOM_REGEX_OPTS);
     MA(atom_js, ATOM_JS);
     MA(atom_timestamp, ATOM_TIMESTAMP);
     MA(atom_timestamp_value, ATOM_TS_VALUE);
