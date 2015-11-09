@@ -11,7 +11,7 @@
 typedef struct {
     int32_t status; // negative: doc, nonnegative: index of array
     int32_t* ptr; // The pointer of length;
-    int32_t writed;
+    int32_t written;
     ErlNifMapIterator iter;
 } Stack;
 
@@ -56,9 +56,14 @@ ErlNifBinary* enc_alloc_bin(Encoder* e) {
 }
 
 static inline
+int enc_write_len(Encoder* e) {
+    return e->i + e->bin_top?(e->bin_top*BIN_BLOCK_SIZE):0;
+}
+
+static inline
 int enc_write_bin(Encoder* e, uint8_t* data, size_t len) {
     ErlNifBinary* bin = e->bin + e->bin_top - 1;
-    enc_curr(e)->writed += len;
+    enc_curr(e)->written += len;
 
     while(e->i + len > bin->size) {
         int rest = bin->size - e->i;
@@ -83,7 +88,7 @@ static
 unsigned char* enc_skip_len(Encoder* e, int32_t len) {
     ErlNifBinary* bin = e->bin + e->bin_top - 1;
     
-    enc_curr(e)->writed += len;
+    enc_curr(e)->written += len;
 
     if(e->i + len > bin->size) {
         if(e->i < bin->size) {
@@ -259,7 +264,7 @@ int32_t * enc_push(Encoder* e, int32_t status) {
 
     st = e->st_data + e->st_top;
     st->status = status;
-    st->writed = 0;
+    st->written = 0;
     e->st_top++;
     
     st->ptr = (int32_t*)enc_skip_len(e, sizeof(int32_t));
@@ -269,17 +274,17 @@ int32_t * enc_push(Encoder* e, int32_t status) {
 static 
 void enc_pop(Encoder* e) {
     Stack* st = e->st_data + e->st_top - 1;
-    int32_t writed = st->writed;
-    *(st->ptr) = writed;
+    int32_t written = st->written;
+    *(st->ptr) = written;
 
     st->status = -2; 
     st->ptr = 0; 
-    st->writed = 0;
+    st->written = 0;
     e->st_top--;
    
     if(e->st_top > 0) {
         st = e->st_data + e->st_top - 1;
-        st->writed += writed; 
+        st->written += written; 
     }
 }
 
@@ -441,6 +446,8 @@ ERL_NIF_TERM encode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     ERL_NIF_TERM stack = argv[1];
     ERL_NIF_TERM curr, key, value, ret;
 
+    int start = enc_write_len(e);
+
     const ERL_NIF_TERM* tuple;
     int arity;
     unsigned char* ptr;
@@ -454,6 +461,11 @@ ERL_NIF_TERM encode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
         }
         Stack* curr_stack = enc_curr(e);
 next:
+        if(should_yield(env, &start, enc_write_len(e), e->bytes_per_red)) {
+            stack = enif_make_list_cell(env, curr, stack);
+            return enif_make_tuple3(env, st->atom_iter, argv[0], stack);
+        }
+       
         // get key and value
         if(enc_is_list(curr_stack)) {
             if(!enif_get_list_cell(env, curr, &value, &curr)) {

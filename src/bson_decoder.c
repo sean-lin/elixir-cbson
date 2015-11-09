@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
@@ -122,7 +123,12 @@ void dec_init(Decoder* d, ErlNifEnv* env, ERL_NIF_TERM arg, ErlNifBinary* bin) {
 
     d->p = (unsigned char*)bin->data;
     d->len = bin->size;
-    d->i = 0;
+    
+    if(d->i < 0) { 
+        d->i = 0;
+    }else{
+        assert(d->i > d->len && "error bin");
+    }
 }
 
 void dec_destroy(ErlNifEnv* env, void* obj) {
@@ -308,7 +314,7 @@ ERL_NIF_TERM decode_init(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     Decoder* d;
     
     cbson_st* st = (cbson_st*)enif_priv_data(env);
-    ERL_NIF_TERM tmp_argv[5];
+    ERL_NIF_TERM tmp_argv[4];
     ERL_NIF_TERM opts;
     ERL_NIF_TERM val;
     
@@ -323,9 +329,8 @@ ERL_NIF_TERM decode_init(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     
     tmp_argv[0] = argv[0];
     tmp_argv[1] = enif_make_resource(env, d);
-    tmp_argv[2] = st->atom_error;
+    tmp_argv[2] = enif_make_list(env, 0);
     tmp_argv[3] = enif_make_list(env, 0);
-    tmp_argv[4] = enif_make_list(env, 0);
 
     enif_release_resource(d);
 
@@ -368,7 +373,7 @@ ERL_NIF_TERM decode_init(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
         return make_error(st, env, "invalid_bson");
     }
     dec_push(d, st_doc, end);
-    return decode_iter(env, 5, tmp_argv);
+    return decode_iter(env, 4, tmp_argv);
 }
 
 #define ASSERT_LEN(d,l,m) if((d)->i + (l) > st_end) {\
@@ -387,35 +392,33 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
     ErlNifBinary bin;
 
-    if(argc != 5) {
+    if(argc != 4) {
         return enif_make_badarg(env);
     } else if(!enif_inspect_binary(env, argv[0], &bin)) {
         return enif_make_badarg(env);
     } else if(!enif_get_resource(env, argv[1], st->res_dec, (void**) &d)) {
         return enif_make_badarg(env);
+    } else if(!enif_is_list(env, argv[2])) {
+        return enif_make_badarg(env);
     } else if(!enif_is_list(env, argv[3])) {
         return enif_make_badarg(env);
-    } else if(!enif_is_list(env, argv[4])) {
-        return enif_make_badarg(env);
     }
-    if(bin.data != d->p) {
-        // maybe wrong
-        return enif_make_badarg(env);
-    }
-
-    int bytes_start = d->i;
-
-    ERL_NIF_TERM objs = argv[3];
-    ERL_NIF_TERM curr = argv[4];
     
-    ERL_NIF_TERM val = argv[2];
+    
+    d->arg = argv[0];
+    ERL_NIF_TERM objs = argv[2];
+    ERL_NIF_TERM curr = argv[3];
+ 
+    int start = d->i;
+
+    ERL_NIF_TERM val;
     ERL_NIF_TERM ename;
     ERL_NIF_TERM ret;
 
     while(d->i < bin.size) {
     next:
-        if(should_yield(env, &bytes_start, d->i, d->bytes_per_red)) {
-            return enif_make_tuple5(env, st->atom_iter, argv[1], val, objs, curr);
+        if(should_yield(env, &start, d->i, d->bytes_per_red)) {
+            return enif_make_tuple4(env, st->atom_iter, argv[1], objs, curr);
         }
        
         char curr_stack = dec_curr(d);

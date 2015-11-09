@@ -77,6 +77,11 @@ defmodule CBsonTest do
     assert t == CBson.decode(rest, [:return_trailer])
   end
 
+  test "encode/decode large" do
+    t = Enum.reduce(1..500, %{}, fn x, acc -> Map.put(acc, to_string(x), :binary.copy("12345678910", x)) end)
+    assert t == CBson.encode(t) |> CBson.decode
+  end
+
   test "decode cmd" do
     bin = <<92, 0, 0, 0, 16, 99, 111, 110, 110, 101, 99, 116, 105, 111, 110, 73, 100, 0, 26, 22, 0, 0, 8, 117, 112, 
     100, 97, 116, 101, 100, 69, 120, 105, 115, 116, 105, 110, 103, 0, 0, 16, 110, 0, 0, 0, 0, 0, 16, 115, 121, 
