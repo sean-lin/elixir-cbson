@@ -465,6 +465,7 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
                     d->i += 8;
                     break;
                 case BSON_STRING:
+                case BSON_SYMBOL:
                     ASSERT_LEN(d, 4, "invalid_string");
                     len = *(int32_t*)(d->p + d->i);
                     d->i += 4;

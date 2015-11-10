@@ -16,7 +16,7 @@
 #define BSON_REGEX              0x0B
 // deprecated DBPointer         0x0C
 #define BSON_JS                 0x0D
-// deprecated                   0x0E
+#define BSON_SYMBOL             0x0E // deprecated, read only and encode string back
 #define BSON_JS_WS              0x0F
 #define BSON_INT32              0x10
 #define BSON_TIMESTAMP          0x11
