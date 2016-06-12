@@ -90,6 +90,11 @@ defmodule CBsonTest do
     assert %{ok: 1.0} = CBson.decode(bin, [:return_atom])
   end
 
+  test "decode fail" do
+    error = catch_throw CBson.decode <<1, 2, 0, 0>>
+    assert {:error, :invalid_bson} == error
+  end
+  
   test "encode fail" do
     t = %{a: [1, {2, 3}]}
     error = catch_throw CBson.encode(t)

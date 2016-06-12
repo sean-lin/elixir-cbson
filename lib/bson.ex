@@ -104,7 +104,7 @@ defmodule Bson do
   end
 
   @doc false
-  def hex(bin), do: (for <<h::4 <- bin>>, into: <<>>, do: <<Integer.to_string(h,16)::binary>>)
+  def hex(bin), do: (for <<h::4 <- bin>>, into: <<>>, do: <<Integer.to_string(h, 16)::binary>>)
 
   defmodule Regex do
     defstruct pattern: "", opts: ""
@@ -235,10 +235,10 @@ defmodule Bson do
   iex> %{} |> Bson.encode |> Bson.decode
   %{}
 
-  iex> %{a: "a"} |> Bson.encode |> Bson.decode [:return_atom]
+  iex> %{a: "a"} |> Bson.encode |> Bson.decode([:return_atom])
   %{a: "a"}
 
-  iex> %{a: 1, b: [2, "c"]} |> Bson.encode |> Bson.decode [:return_atom]
+  iex> %{a: 1, b: [2, "c"]} |> Bson.encode |> Bson.decode([:return_atom])
   %{a: 1, b: [2, "c"]}
 
   ```
