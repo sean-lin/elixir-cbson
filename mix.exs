@@ -12,8 +12,8 @@ defmodule Cbson.Mixfile do
 
   def project do
     [app: :cbson,
-     version: "0.0.2",
-     elixir: "~> 1.2",
+     version: "0.0.3",
+     elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      compilers: [:NIF, :elixir, :app, :erlang],

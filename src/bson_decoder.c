@@ -460,8 +460,23 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
             switch(type) {
                 case BSON_DOUBLE:
                     ASSERT_LEN(d, 8, "invalid_double");
-                    double n = *(double*)(d->p + d->i);
-                    val = enif_make_double(env, n);
+                    unsigned char* p = d->p + d->i;
+                    if(memcmp(p , nan1, 6) != 0) {
+                        val = enif_make_double(env, *(double*)p);
+                    }else{
+                        unsigned char* f = p + 6;
+                        if(memcmp(f, nan1 + 6, 2) == 0){
+                            val = d->atoms->atom_nan;
+                        }else if(memcmp(f, nan2 + 6, 2) == 0){
+                            val = d->atoms->atom_nan;
+                        }else if(memcmp(f, inf + 6, 2) == 0){
+                            val = d->atoms->atom_inf;
+                        }else if(memcmp(f, ninf + 6, 2) == 0){
+                            val = d->atoms->atom_ninf;
+                        }else{
+                            val = enif_make_double(env, *(double*)p);
+                        }
+                    }
                     d->i += 8;
                     break;
                 case BSON_STRING:

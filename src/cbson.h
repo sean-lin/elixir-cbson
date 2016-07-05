@@ -49,6 +49,9 @@
 #define ATOM_BIN                "Elixir.Bson.Bin"
 #define ATOM_BIN_VALUE          "bin"
 #define ATOM_BIN_SUBTYPE        "subtype"
+#define ATOM_INF                "+inf"
+#define ATOM_NINF               "-inf"
+#define ATOM_NAN                "nan"
 #else
 
 #endif // ERICMJ_MONGODB
@@ -87,9 +90,19 @@ typedef struct {
     ERL_NIF_TERM atom_bin_value;
     ERL_NIF_TERM atom_bin_subtype;
 
+    ERL_NIF_TERM atom_inf;
+    ERL_NIF_TERM atom_ninf;
+    ERL_NIF_TERM atom_nan;
+
     ErlNifResourceType* res_dec;
     ErlNifResourceType* res_enc;
 } cbson_st;
+
+extern const unsigned char *inf;
+extern const unsigned char *ninf;
+extern const unsigned char *nan1;
+extern const unsigned char *nan2;
+
 
 ERL_NIF_TERM make_atom(ErlNifEnv* env, const char* name);
 int make_atom_by_binary(ErlNifEnv* env, ERL_NIF_TERM* out, ERL_NIF_TERM* bin);

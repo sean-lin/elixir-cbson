@@ -106,6 +106,20 @@ defmodule CBsonTest do
     assert t == CBson.encode(t) |> CBson.decode([:return_atom])
   end
 
+  test "double" do
+    t = %{d: :nan}
+    assert <<16, 0, 0, 0, 1, 100, 0, 0, 0, 0, 0, 0, 0, 248, 127, 0>> == CBson.encode(t)
+    
+    t = %{d: :"+inf"}
+    assert <<16, 0, 0, 0, 1, 100, 0, 0, 0, 0, 0, 0, 0, 240, 127, 0>> == CBson.encode(t)
+    
+    t = %{d: :"-inf"}
+    assert <<16, 0, 0, 0, 1, 100, 0, 0, 0, 0, 0, 0, 0, 240, 255, 0>> == CBson.encode(t)
+   
+    t = %{a: :nan, b: :"+inf", c: "-inf"}
+    assert t == CBson.encode(t) |> CBson.decode([:return_atom])
+  end
+
   defp deep(0, acc) do
     acc
   end

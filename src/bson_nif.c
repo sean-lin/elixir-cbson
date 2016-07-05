@@ -1,6 +1,12 @@
 #include "cbson.h"
 
 
+const unsigned char *nan1 = "\0\0\0\0\0\0\xf8\x7f";
+const unsigned char *nan2 = "\0\0\0\0\0\0\xf8\xff";
+const unsigned char *inf =  "\0\0\0\0\0\0\xf0\x7f";
+const unsigned char *ninf =  "\0\0\0\0\0\0\xf0\xff";
+
+
 static int load(ErlNifEnv* env, void** priv, ERL_NIF_TERM info) {
     cbson_st* st = enif_alloc(sizeof(cbson_st));
     if(st == NULL) {
@@ -42,6 +48,10 @@ static int load(ErlNifEnv* env, void** priv, ERL_NIF_TERM info) {
     MA(atom_bin_value, ATOM_BIN_VALUE);
     MA(atom_bin_subtype, ATOM_BIN_SUBTYPE);
     
+    MA(atom_inf, ATOM_INF);
+    MA(atom_ninf, ATOM_NINF);
+    MA(atom_nan, ATOM_NAN);
+
     st->res_dec = enif_open_resource_type(
             env,
             NULL,

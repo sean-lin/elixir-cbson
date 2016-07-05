@@ -525,6 +525,15 @@ next:
             } else if(enif_compare(value, st->atom_false) == 0) {
                 *ptr = BSON_BOOL;
                 enc_write_uint8(e, 0x0);
+            } else if(enif_compare(value, st->atom_nan) == 0) {
+                *ptr = BSON_DOUBLE;
+                enc_write_bin(e, (unsigned char*)nan1, 8);
+            } else if(enif_compare(value, st->atom_inf) == 0) {
+                *ptr = BSON_DOUBLE;
+                enc_write_bin(e, (unsigned char*)inf, 8);
+            } else if(enif_compare(value, st->atom_ninf) == 0) {
+                *ptr = BSON_DOUBLE;
+                enc_write_bin(e, (unsigned char*)ninf, 8);
             } else if(enif_compare(value, st->atom_bson_min) == 0) {
                 *ptr = BSON_MIN;
             } else if(enif_compare(value, st->atom_bson_max) == 0) {
