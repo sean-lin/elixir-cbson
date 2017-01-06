@@ -1,5 +1,4 @@
 defmodule Mix.Tasks.Compile.NIF do
-  @shortdoc "Compiles sass library"
   def run(_) do
     if Mix.shell.cmd("make nif") != 0 do
       raise Mix.Error, message: "could not run `make nif`."
@@ -17,7 +16,7 @@ defmodule Cbson.Mixfile do
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      compilers: [:NIF, :elixir, :app, :erlang],
-     deps: deps]
+     deps: deps()]
   end
 
   # Configuration for the OTP application
