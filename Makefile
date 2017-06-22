@@ -23,10 +23,10 @@ mix:
 nif:$(TARGET)
 
 $(TARGET): $(NIF_SRC)
-	mkdir -p priv && $(CC) $(CFLAGS) $(ERLANG_FLAGS) -shared $(OPTIONS) $(NIF_SRC) -o $@
+	$(CC) $(CFLAGS) $(ERLANG_FLAGS) -shared $(OPTIONS) $(NIF_SRC) -o $@
 
 cbson-clean:
-	rm -rf priv
+	rm -rf priv/*.so
 
 clean: cbson-clean
 
