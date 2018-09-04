@@ -1,8 +1,14 @@
-defmodule Mix.Tasks.Compile.NIF do
+defmodule Mix.Tasks.Compile.Nif do
   def run(_) do
-    if Mix.shell.cmd("make nif") != 0 do
+    cp = Mix.Project.compile_path()
+    priv_path = Path.join([cp, "..", "priv"])
+    File.mkdir_p(priv_path)
+    File.mkdir_p("priv")
+    if Mix.shell.cmd("PRIV_PATH=#{priv_path} make nif") != 0 do
       raise Mix.Error, message: "could not run `make nif`."
     end
+    File.copy(Path.join([priv_path, "bson_nif.so"]), "priv")
+    :ok
   end
 end
 
@@ -12,10 +18,10 @@ defmodule Cbson.Mixfile do
   def project do
     [app: :cbson,
      version: "0.0.3",
-     elixir: "~> 1.3",
+     elixir: "~> 1.5",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     compilers: [:NIF, :elixir, :app, :erlang],
+     compilers: [:nif | Mix.compilers],
      deps: deps()]
   end
 
