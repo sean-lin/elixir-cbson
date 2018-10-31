@@ -504,6 +504,11 @@ next:
                 enif_map_iterator_next(env, &(curr_stack->iter));
             }
 
+
+            if(enif_is_atom(env, key) && enif_compare(key, st->atom_struct) == 0) {
+                goto next;
+            }
+            
             ptr = enc_skip_len(e, sizeof(unsigned char));
             if(!enc_ename(e, key)) {
                 ret = enc_obj_error(e, "invalid_string", key);
@@ -589,11 +594,11 @@ next:
                         goto done;
                     }
                 } else {
-                    enc_error(e, "error_struct");
-                    goto done;
+                    goto encode_map_doc;
                 }
             }else{
                 // doc
+encode_map_doc:
                 *ptr = BSON_DOCUMENT;
                 enc_push(e, -1);
                 enif_map_iterator_create(

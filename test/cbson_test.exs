@@ -119,6 +119,11 @@ defmodule CBsonTest do
     t = %{a: :nan, b: :"+inf", c: "-inf"}
     assert t == CBson.encode(t) |> CBson.decode([:return_atom])
   end
+  
+  test "save struct" do
+    t = %{__struct__: ABC, a: 1, b: 2}
+    assert CBson.encode(%{key: t}) |> CBson.decode([:return_atom]) == %{key: :maps.remove(:__struct__, t)}
+  end
 
   defp deep(0, acc) do
     acc
