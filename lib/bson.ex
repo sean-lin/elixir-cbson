@@ -100,7 +100,12 @@ defmodule Bson do
     iex> inspect Bson.ObjectId.from_string("52e0e5a10000020003000004")
     "ObjectId(52e0e5a10000020003000004)"
     """
-    def from_string(object_id) when is_bitstring(object_id) and byte_size(object_id) == 24 , do: %Bson.ObjectId{oid: (for <<hex::16 <- object_id>>, into: <<>>, do: <<String.to_integer(<<hex::16>>, 16)::8>>)}
+    def from_string(object_id) when is_bitstring(object_id) and byte_size(object_id) == 24 do
+      %Bson.ObjectId{oid: (for <<hex::16 <- object_id>>, into: <<>>, do: <<String.to_integer(<<hex::16>>, 16)::8>>)}
+    end
+    def from_string(object_id) do
+      throw {:error, to_string(object_id) <> " trans to objectid error"}
+    end
   end
 
   @doc false

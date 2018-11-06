@@ -47,7 +47,7 @@ static int load(ErlNifEnv* env, void** priv, ERL_NIF_TERM info) {
     MA(atom_bin, ATOM_BIN);
     MA(atom_bin_value, ATOM_BIN_VALUE);
     MA(atom_bin_subtype, ATOM_BIN_SUBTYPE);
-    
+
     MA(atom_inf, ATOM_INF);
     MA(atom_ninf, ATOM_NINF);
     MA(atom_nan, ATOM_NAN);
