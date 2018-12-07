@@ -1,9 +1,9 @@
 defmodule Bson.JsonExt do
   @moduledoc """
   This module provides two helper methods `dump` and `load`
-  methods and provide explicit BSON conversion to and from json compatible Elixir terms.  
-  This allows for specialized encoding and decoding of BSON documents into 
-  `Mongo Extended JSON <http://www.mongodb.org/display/DOCS/Mongo+Extended+JSON>`_'s *Strict* mode.  
+  methods and provide explicit BSON conversion to and from json compatible Elixir terms.
+  This allows for specialized encoding and decoding of BSON documents into
+  `Mongo Extended JSON <http://www.mongodb.org/display/DOCS/Mongo+Extended+JSON>`_'s *Strict* mode.
   This lets you encode / decode BSON documents to json even when
   they use special BSON types.
 
@@ -50,10 +50,10 @@ defmodule Bson.JsonExt do
       "d"  => [23, 45, 200],
       "e"  => %{"$type" => "00", "$bin" => "zwgWRaOMYiAAA="},
       "f"  => %{"$type" => "01", "$bin" => "zwgWRaOMYiAAA="},
-      "g"  => %{"$type" => "03", 
+      "g"  => %{"$type" => "03",
                 "$bin" => "MQAAAARCU09OACYAAAACMAAIAAAAYXdlc29tZQABMQAzMzMzMzMUQBAyAMIHAAAAAA=="},
       "h"  => %{"$type" => "05", "$bin" => "zwgWRaOMYiAAA="},
-      "i"  => %{"$type" => "80", 
+      "i"  => %{"$type" => "80",
                 "$bin" => "MQAAAARCU09OACYAAAACMAAIAAAAYXdlc29tZQABMQAzMzMzMzMUQBAyAMIHAAAAAA=="},
       "j"  => %{"$oid" => "52e0e5a10000020003000004"},
       "k1" => false,
@@ -72,7 +72,7 @@ defmodule Bson.JsonExt do
     true
 
   ```
-  
+
   see `dump/1` and `load/1`
   """
 
@@ -80,26 +80,34 @@ defmodule Bson.JsonExt do
   def dump(n) when is_number(n), do: n
   def dump(str) when is_binary(str), do: str
   def dump(atom) when is_atom(atom), do: atom
+
   def dump(%Bson.ObjectId{oid: oid}) do
-    %{"$oid" => Bson.hex(oid)|>String.downcase}
+    %{"$oid" => Bson.hex(oid)}
   end
+
   def dump(%Bson.UTC{ms: ms}) do
     %{"$date" => %{"$numberLong" => Integer.to_string(ms)}}
   end
+
   def dump(%Bson.Bin{bin: bin, subtype: subtype}) do
-    %{"$binary"=> Base.encode64(bin), "$type" => xsubty(subtype)}
+    %{"$binary" => CBson.nif_b64encode(bin), "$type" => xsubty(subtype)}
   end
+
   def dump(bson) when is_map(bson) do
     :maps.map(fn _k, v -> dump(v) end, bson)
   end
+
   def dump([]), do: []
-  def dump([{_, _}|_] = bson) do
+
+  def dump([{_, _} | _] = bson) do
     :lists.map(fn {k, v} -> {k, dump(v)} end, bson)
-    |> :maps.from_list
+    |> :maps.from_list()
   end
+
   def dump(bson) when is_list(bson) do
     :lists.map(&dump/1, bson)
   end
+
   def dump(:min_key), do: %{"$minKey" => 1}
   def dump(:max_key), do: %{"$maxKey" => 1}
 
@@ -107,21 +115,27 @@ defmodule Bson.JsonExt do
   def load(n) when is_number(n), do: n
   def load(str) when is_binary(str), do: str
   def load(atom) when is_atom(atom), do: atom
+
   def load(json) when is_list(json) do
     :lists.map(&load/1, json)
   end
+
   def load(%{"$oid" => oid}) do
     Bson.ObjectId.from_string(oid)
   end
+
   def load(%{"$date" => %{"$numberLong" => ms}}) do
     %Bson.UTC{ms: String.to_integer(ms)}
   end
+
   def load(%{"$binary" => bin, "$type" => type}) do
     %Bson.Bin{bin: Base.decode64!(bin), subtype: String.to_integer(type, 16)}
   end
+
   def load(%{"$numberLong" => n}) do
     String.to_integer(n)
   end
+
   def load(json) when is_map(json) do
     :maps.map(fn _k, v -> load(v) end, json)
   end
@@ -134,5 +148,30 @@ defmodule Bson.JsonExt do
   defp xsubty(0x04), do: "04"
   defp xsubty(0x05), do: "05"
   defp xsubty(0x80), do: "80"
-end
 
+  def plain_dump(bson)
+  def plain_dump(n) when is_number(n), do: n
+  def plain_dump(str) when is_binary(str), do: str
+  def plain_dump(atom) when is_atom(atom), do: atom
+  def plain_dump(%Bson.ObjectId{oid: oid}), do: Bson.hex(oid)
+  def plain_dump(%Bson.UTC{ms: ms}), do: ms
+  def plain_dump(%Bson.Bin{bin: bin}), do: CBson.nif_b64encode(bin)
+
+  def plain_dump(bson) when is_map(bson) do
+    :maps.map(fn _k, v -> plain_dump(v) end, bson)
+  end
+
+  def plain_dump([]), do: []
+
+  def plain_dump([{_, _} | _] = bson) do
+    :lists.map(fn {k, v} -> {k, plain_dump(v)} end, bson)
+    |> :maps.from_list()
+  end
+
+  def plain_dump(bson) when is_list(bson) do
+    :lists.map(&plain_dump/1, bson)
+  end
+
+  def plain_dump(:min_key), do: %{"$minKey" => 1}
+  def plain_dump(:max_key), do: %{"$maxKey" => 1}
+end

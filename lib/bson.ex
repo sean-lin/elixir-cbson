@@ -1,4 +1,3 @@
-if Mix.env != :bench do
 defmodule Bson do
   @moduledoc """
   `Bson` provides encoding and decoding function for Bson format
@@ -41,17 +40,17 @@ defmodule Bson do
     ...> t: Bson.ObjectId.from_string("52e0e5a10000020003000004")
     ...> }
     ...> bson = Bson.encode(term)
-    <<100, 1, 0, 0, 1, 97, 0, 206, 199, 181, 161, 98, 236, 16, 192, 2, 98, 0, 6, 0, 0, 0, 104, 101, 108, 108, 111, 
-    0, 3, 99, 0, 23, 0, 0, 0, 16, 120, 0, 255, 255, 255, 255, 1, 121, 0, 210, 111, 95, 7, 206, 153, 1, 64, 0, 4, 100, 
-    0, 26, 0, 0, 0, 16, 48, 0, 23, 0, 0, 0, 16, 49, 0, 45, 0, 0, 0, 16, 50, 0, 200, 0, 0, 0, 0, 5, 101, 101, 101, 101, 
-    101, 101, 101, 101, 101, 0, 11, 0, 0, 0, 0, 200, 12, 240, 129, 100, 90, 56, 198, 34, 0, 0, 5, 102, 0, 11, 0, 0, 0, 
-    1, 200, 12, 240, 129, 100, 90, 56, 198, 34, 0, 0, 5, 103, 0, 49, 0, 0, 0, 4, 49, 0, 0, 0, 4, 66, 83, 79, 78, 0, 38, 
-    0, 0, 0, 2, 48, 0, 8, 0, 0, 0, 97, 119, 101, 115, 111, 109, 101, 0, 1, 49, 0, 51, 51, 51, 51, 51, 51, 20, 64, 16, 50, 
-    0, 194, 7, 0, 0, 0, 0, 5, 104, 0, 11, 0, 0, 0, 5, 200, 12, 240, 129, 100, 90, 56, 198, 34, 0, 0, 5, 105, 0, 49, 0, 0, 
-    0, 128, 49, 0, 0, 0, 4, 66, 83, 79, 78, 0, 38, 0, 0, 0, 2, 48, 0, 8, 0, 0, 0, 97, 119, 101, 115, 111, 109, 101, 0, 1, 
-    49, 0, 51, 51, 51, 51, 51, 51, 20, 64, 16, 50, 0, 194, 7, 0, 0, 0, 0, 7, 106, 0, 82, 224, 229, 161, 0, 0, 2, 0, 3, 0, 
-    0, 4, 8, 107, 49, 0, 0, 8, 107, 50, 0, 1, 9, 108, 0, 253, 253, 128, 190, 67, 1, 0, 0, 10, 109, 0, 16, 113, 49, 0, 160, 
-    165, 195, 136, 18, 113, 50, 0, 207, 6, 171, 1, 241, 147, 227, 255, 17, 114, 0, 2, 0, 0, 0, 0, 0, 0, 0, 255, 115, 49, 0, 
+    <<100, 1, 0, 0, 1, 97, 0, 206, 199, 181, 161, 98, 236, 16, 192, 2, 98, 0, 6, 0, 0, 0, 104, 101, 108, 108, 111,
+    0, 3, 99, 0, 23, 0, 0, 0, 16, 120, 0, 255, 255, 255, 255, 1, 121, 0, 210, 111, 95, 7, 206, 153, 1, 64, 0, 4, 100,
+    0, 26, 0, 0, 0, 16, 48, 0, 23, 0, 0, 0, 16, 49, 0, 45, 0, 0, 0, 16, 50, 0, 200, 0, 0, 0, 0, 5, 101, 101, 101, 101,
+    101, 101, 101, 101, 101, 0, 11, 0, 0, 0, 0, 200, 12, 240, 129, 100, 90, 56, 198, 34, 0, 0, 5, 102, 0, 11, 0, 0, 0,
+    1, 200, 12, 240, 129, 100, 90, 56, 198, 34, 0, 0, 5, 103, 0, 49, 0, 0, 0, 4, 49, 0, 0, 0, 4, 66, 83, 79, 78, 0, 38,
+    0, 0, 0, 2, 48, 0, 8, 0, 0, 0, 97, 119, 101, 115, 111, 109, 101, 0, 1, 49, 0, 51, 51, 51, 51, 51, 51, 20, 64, 16, 50,
+    0, 194, 7, 0, 0, 0, 0, 5, 104, 0, 11, 0, 0, 0, 5, 200, 12, 240, 129, 100, 90, 56, 198, 34, 0, 0, 5, 105, 0, 49, 0, 0,
+    0, 128, 49, 0, 0, 0, 4, 66, 83, 79, 78, 0, 38, 0, 0, 0, 2, 48, 0, 8, 0, 0, 0, 97, 119, 101, 115, 111, 109, 101, 0, 1,
+    49, 0, 51, 51, 51, 51, 51, 51, 20, 64, 16, 50, 0, 194, 7, 0, 0, 0, 0, 7, 106, 0, 82, 224, 229, 161, 0, 0, 2, 0, 3, 0,
+    0, 4, 8, 107, 49, 0, 0, 8, 107, 50, 0, 1, 9, 108, 0, 253, 253, 128, 190, 67, 1, 0, 0, 10, 109, 0, 16, 113, 49, 0, 160,
+    165, 195, 136, 18, 113, 50, 0, 207, 6, 171, 1, 241, 147, 227, 255, 17, 114, 0, 2, 0, 0, 0, 0, 0, 0, 0, 255, 115, 49, 0,
     127, 115, 50, 0, 7, 116, 0, 82, 224, 229, 161, 0, 0, 2, 0, 3, 0, 0, 4, 0>>
     ...> decodedTerm = Bson.decode(bson, [:return_atom])
     ...> # assert that one by one all decoded element are identical to the original
@@ -65,6 +64,7 @@ defmodule Bson do
   """
   defmodule ObjectId do
     defstruct oid: nil
+
     @moduledoc """
     Represents the [MongoDB ObjectId](http://docs.mongodb.org/manual/reference/object-id/)
 
@@ -79,18 +79,21 @@ defmodule Bson do
 
     """
     defimpl Inspect, for: Bson.ObjectId do
-      def inspect(%Bson.ObjectId{oid: nil},_), do: "ObjectId()"
-      def inspect(%Bson.ObjectId{oid: oid},_) when is_binary(oid), do: "ObjectId(#{Bson.hex(oid)|>String.downcase})"
-      def inspect(%Bson.ObjectId{oid: oid},_), do: "InvalidObjectId(#{inspect(oid)})"
+      def inspect(%Bson.ObjectId{oid: nil}, _), do: "ObjectId()"
+
+      def inspect(%Bson.ObjectId{oid: oid}, _) when is_binary(oid),
+        do: "ObjectId(#{Bson.hex(oid)})"
+
+      def inspect(%Bson.ObjectId{oid: oid}, _), do: "InvalidObjectId(#{inspect(oid)})"
     end
-    
+
     defimpl String.Chars, for: Bson.ObjectId do
       def to_string(%Bson.ObjectId{oid: oid}) do
-        Bson.hex(oid)|>String.downcase
+        CBson.nif_objectid2bin(oid)
       end
     end
 
-    @doc  """
+    @doc """
     Converts a string into a %Bson.ObjectId
 
     * `:object_id` - A string representing the BSON Object Id
@@ -100,14 +103,22 @@ defmodule Bson do
     iex> inspect Bson.ObjectId.from_string("52e0e5a10000020003000004")
     "ObjectId(52e0e5a10000020003000004)"
     """
-    def from_string(object_id) when is_bitstring(object_id) and byte_size(object_id) == 24 , do: %Bson.ObjectId{oid: (for <<hex::16 <- object_id>>, into: <<>>, do: <<String.to_integer(<<hex::16>>, 16)::8>>)}
+    def from_string(object_id) do
+      %Bson.ObjectId{
+        #oid: Base.decode16!(object_id, case: :lower)
+        oid: CBson.nif_bin2objectid(object_id)
+      }
+    end
   end
 
   @doc false
-  def hex(bin), do: (for <<h::4 <- bin>>, into: <<>>, do: <<Integer.to_string(h, 16)::binary>>)
+  def hex(oid) do
+    CBson.nif_objectid2bin(oid)
+  end
 
   defmodule Regex do
     defstruct pattern: "", opts: ""
+
     @moduledoc """
     Represents a Regex
 
@@ -115,8 +126,10 @@ defmodule Bson do
     * `:opts` - a bianry that contains the regex options string identified by characters, which must be stored in alphabetical order. Valid options are 'i' for case insensitive matching, 'm' for multiline matching, 'x' for verbose mode, 'l' to make \w, \W, etc. locale dependent, 's' for dotall mode ('.' matches everything), and 'u' to make \w, \W, etc. match unicode
     """
   end
+
   defmodule JS do
     defstruct code: "", scope: nil
+
     @moduledoc """
     Represents a Javascript function and optionally its scope
 
@@ -124,14 +137,18 @@ defmodule Bson do
     * `:scope` - a Map representing a bson document, the scope of the function
     """
   end
+
   defmodule Timestamp do
     defstruct ts: nil
+
     @moduledoc """
     Represents the special internal type Timestamp used by MongoDB
     """
   end
+
   defmodule UTC do
     defstruct ms: nil
+
     @moduledoc """
     Represent UTC datetime
 
@@ -142,11 +159,12 @@ defmodule Bson do
 
     """
     defimpl Inspect, for: Bson.UTC do
-      def inspect(bson_utc,_) do
+      def inspect(bson_utc, _) do
         {{y, mo, d}, {h, mi, s}} = :calendar.now_to_universal_time(Bson.UTC.to_now(bson_utc))
         "#{y}-#{mo}-#{d}T#{h}:#{mi}:#{s}"
       end
     end
+
     @doc """
     Returns a struct `Bson.UTC` using a tuple given by `:erlang.now/0`
 
@@ -156,7 +174,8 @@ defmodule Bson do
 
     ```
     """
-    def from_now({a, s, o}), do: %UTC{ms: a * 1000000000 + s * 1000 + div(o, 1000)}
+    def from_now({a, s, o}), do: %UTC{ms: a * 1_000_000_000 + s * 1000 + div(o, 1000)}
+
     @doc """
     Returns a triplet tuple similar to the return value of `:erlang.now/0` using a struct `Bson.UTC`
 
@@ -166,10 +185,13 @@ defmodule Bson do
 
     ```
     """
-    def to_now(%UTC{ms: ms}), do: {div(ms, 1000000000), rem(div(ms, 1000), 1000000), rem(ms * 1000, 1000000)}
+    def to_now(%UTC{ms: ms}),
+      do: {div(ms, 1_000_000_000), rem(div(ms, 1000), 1_000_000), rem(ms * 1000, 1_000_000)}
   end
+
   defmodule Bin do
     defstruct bin: "", subtype: 0x00
+
     @moduledoc """
     Represents Binary data
     """
@@ -184,24 +206,24 @@ defmodule Bson do
     * `:md5` - MD5
     * `:usrer` - User defined
     """
-    def subtyx(:binary),     do: 0x00
-    def subtyx(:function),   do: 0x01
+    def subtyx(:binary), do: 0x00
+    def subtyx(:function), do: 0x01
     def subtyx(:binary_old), do: 0x02
-    def subtyx(:uuid_old),   do: 0x03
-    def subtyx(:uuid),       do: 0x04
-    def subtyx(:md5),        do: 0x05
-    def subtyx(:user),       do: 0x80
+    def subtyx(:uuid_old), do: 0x03
+    def subtyx(:uuid), do: 0x04
+    def subtyx(:md5), do: 0x05
+    def subtyx(:user), do: 0x80
 
     @doc """
     Returns the atom coresponding to the subtype of the bynary data
     """
-    def xsubty(0x00),     do: :binary
-    def xsubty(0x01),     do: :function
-    def xsubty(0x02),     do: :binary
-    def xsubty(0x03),     do: :uuid
-    def xsubty(0x04),     do: :uuid
-    def xsubty(0x05),     do: :md5
-    def xsubty(0x80),     do: :user
+    def xsubty(0x00), do: :binary
+    def xsubty(0x01), do: :function
+    def xsubty(0x02), do: :binary
+    def xsubty(0x03), do: :uuid
+    def xsubty(0x04), do: :uuid
+    def xsubty(0x05), do: :md5
+    def xsubty(0x80), do: :user
 
     @doc """
     Retruns a struct `Bson.Bin`
@@ -243,8 +265,7 @@ defmodule Bson do
 
   ```
   """
-  
+
   defdelegate decode(term), to: CBson
   defdelegate decode(term, opts), to: CBson
-end
 end

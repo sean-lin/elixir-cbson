@@ -3,7 +3,7 @@ defmodule Data do
     get_data |> Enum.map(&CBson.encode/1)
   end
 
-  defp get_data do
+  def get_data do
     [
       %{
         a:  -4.230845,
@@ -113,7 +113,7 @@ defmodule Data do
         }
       },
       %{
-    "_id"=> Bson.ObjectId.from_string("5625d0b75f6bcdac0556dcec"),
+        "_id"=> Bson.ObjectId.from_string("5625d0b75f6bcdac0556dcec"),
     "avatar"=> %{
         "create"=> nil,
         "id"=> "E575D708-8A61-9B3D-896F-4895809F63E5",
@@ -219,15 +219,15 @@ defmodule DecodBench do
   use Benchfella
 
   bench "decoder(cbson)", [bson: Data.get_bson()] do
-    bson |> Enum.map(&CBson.decode/1)
+    bson |> Enum.each(&Bson.decode/1)
   end
   
-  bench "decoder(bson)", [bson: Data.get_bson()] do
-    bson |> Enum.map(&Bson.decode/1)
+  bench "load_json(cbson)", [json: get_json()] do
+    json |> Enum.each(&Bson.JsonExt.load/1)
   end
-  
-  bench "decoder(BSON)", [bson: Data.get_bson()] do
-    bson |> Enum.map(&BSON.decode/1)
+
+  defp get_json do
+    Data.get_data |> Enum.map(&Bson.JsonExt.dump/1)
   end
 end
 
@@ -235,23 +235,27 @@ defmodule EncodeBench do
   use Benchfella
 
   bench "encode(cbson)", [bson: get_bson()] do
-    bson |> Enum.map(&CBson.encode/1)
+    bson |> Enum.each(&Bson.encode/1)
+  end
+
+  bench "to_json(cbson)", [bson: get_bson()] do
+    bson |> Enum.each(&Bson.JsonExt.dump/1)
+  end
+
+  bench "to_plain_json(cbson)", [bson: get_bson()] do
+    bson |> Enum.each(&Bson.JsonExt.plain_dump/1)
+  end
+
+  bench "b64(elixir)", [data: Data.get_bson()] do
+    data |> Enum.each(&Base.encode64/1)
   end
   
-  bench "encode(bson)", [bson: get_bson()] do
-    bson |> Enum.map(&Bson.encode/1)
-  end
-  
-  bench "encode(BSON)", [bson: get_BSON()] do
-    bson |> Enum.map(&BSON.encode/1)
+  bench "b64(cbson)", [data: Data.get_bson()] do
+    data |> Enum.each(&CBson.nif_b64encode/1)
   end
 
   defp get_bson do
     Data.get_bson |> Enum.map(&CBson.decode/1)
-  end
-
-  defp get_BSON() do
-    Data.get_bson() |> Enum.map(&BSON.decode/1)
   end
 end
 

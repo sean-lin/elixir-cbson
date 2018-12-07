@@ -125,6 +125,11 @@ defmodule CBsonTest do
     assert CBson.encode(%{key: t}) |> CBson.decode([:return_atom]) == %{key: :maps.remove(:__struct__, t)}
   end
 
+  test "base64encode" do
+    bin = <<16, 0, 0, 0, 1, 100, 0, 0, 0, 0, 0, 0, 0, 248, 127, 0>>
+    assert Base.encode64(bin) == CBson.nif_b64encode(bin)
+  end
+
   defp deep(0, acc) do
     acc
   end
