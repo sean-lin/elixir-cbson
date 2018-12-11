@@ -123,4 +123,6 @@ void dec_destroy(ErlNifEnv *env, void *obj);
 ERL_NIF_TERM objectid2bin(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]);
 ERL_NIF_TERM bin2objectid(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]);
 ERL_NIF_TERM b64encode(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]);
+ERL_NIF_TERM split_by_char(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]);
+
 #endif // __CBSON__

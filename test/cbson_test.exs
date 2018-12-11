@@ -130,6 +130,35 @@ defmodule CBsonTest do
     assert Base.encode64(bin) == CBson.nif_b64encode(bin)
   end
 
+  test "objectid" do
+    assert "1234567890220200f3abcdef" == (Bson.ObjectId.from_string("1234567890220200f3abcdef") |> to_string())
+    assert_raise ArgumentError, fn ->
+      Bson.ObjectId.from_string("1234567890220200f3abcde") 
+    end
+    assert_raise ArgumentError, fn ->
+      Bson.ObjectId.from_string("1234567890220200f3abcdez") 
+    end
+    assert_raise ArgumentError, fn ->
+      %Bson.ObjectId{oid: <<82, 224, 229, 161, 0, 0, 2, 0, 3, 0, 0>>} |> to_string
+    end
+    assert_raise ArgumentError, fn ->
+      %Bson.ObjectId{oid: <<82, 224, 229, 161, 0, 0, 2, 0, 3, 0, 0, 4, 5>>} |> to_string
+    end
+  end
+  test "split" do
+    assert {"ab", "cd"} == CBson.nif_split_by_char(<<"00ab", 0, "cd">>, 0, 2)
+    assert {"", "cd"} == CBson.nif_split_by_char(<<"00", 0, "cd">>, 0, 2)
+    assert {"ab", ""} == CBson.nif_split_by_char(<<"00ab", 0>>, 0, 2)
+    assert {"", "cd"} == CBson.nif_split_by_char(<<0, "cd">>, 0, 0)
+    assert {"zz", ""} == CBson.nif_split_by_char(<<"zz", 0>>, 0, 0)
+    assert_raise ArgumentError, fn ->
+      CBson.nif_split_by_char(<<"zz", 0>>, 0, 4)
+    end
+    assert_raise ArgumentError, fn ->
+      CBson.nif_split_by_char(<<"zz", 0, "bb">>, 1111, 0)
+    end
+  end
+
   defp deep(0, acc) do
     acc
   end

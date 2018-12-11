@@ -97,4 +97,8 @@ defmodule CBson do
   def nif_b64encode(_bin) do
     exit(:nif_library_not_loaded)
   end
+  
+  def nif_split_by_char(_bin, _c, _start) do
+    exit(:nif_library_not_loaded)
+  end
 end

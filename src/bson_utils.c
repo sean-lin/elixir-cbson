@@ -1,4 +1,5 @@
 #include "cbson.h"
+#include <string.h>
 
 ERL_NIF_TERM make_atom(ErlNifEnv *env, const char *name)
 {
@@ -118,7 +119,7 @@ ERL_NIF_TERM objectid2bin(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 
     ErlNifBinary bin;
     ERL_NIF_TERM ret;
-    if (!enif_inspect_binary(env, argv[0], &bin) && bin.size != 12)
+    if (!enif_inspect_binary(env, argv[0], &bin) || bin.size != 12)
     {
         return enif_make_badarg(env);
     }
@@ -142,16 +143,25 @@ ERL_NIF_TERM bin2objectid(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
     ErlNifBinary bin;
     ERL_NIF_TERM ret;
-    if (!enif_inspect_binary(env, argv[0], &bin) && bin.size != 24)
+    if (!enif_inspect_binary(env, argv[0], &bin) || bin.size != 24)
     {
         return enif_make_badarg(env);
     }
 
+    unsigned char hi, lo;
     unsigned char *ret_bin = enif_make_new_binary(env, 12, &ret);
     for (int i = 0; i < 12; i++)
     {
         int j = i << 1;
-        ret_bin[i] = (to_int(bin.data[j]) << 4) + to_int(bin.data[j + 1]);
+        hi = bin.data[j];
+        lo = bin.data[j + 1];
+        if(hi < 48 || (hi > 57 && hi < 97) || hi > 102) {
+            return enif_make_badarg(env);
+        }
+        if(lo < 48 || (lo > 57 && lo < 97) || lo > 102) {
+            return enif_make_badarg(env);
+        }
+        ret_bin[i] = (to_int(hi) << 4) + to_int(lo);
     }
     return ret;
 }
@@ -205,4 +215,38 @@ ERL_NIF_TERM b64encode(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
         break;
     }
     return ret;
+}
+
+ERL_NIF_TERM split_by_char(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
+{
+    ErlNifBinary bin;
+    ERL_NIF_TERM ret;
+    int c, start;
+
+    if(argc < 3) {
+        return enif_make_badarg(env);
+    }
+
+    if(!enif_inspect_binary(env, argv[0], &bin)) {
+        return enif_make_badarg(env);
+    }
+
+    if(!enif_get_int(env, argv[1], &c) || c > 255 || c < 0 ) {
+        return enif_make_badarg(env);
+    }
+    
+    if(!enif_get_int(env, argv[2], &start) || start >= bin.size) {
+        return enif_make_badarg(env);
+    }
+
+    unsigned char* pos = (unsigned char*)memchr(bin.data + start, c, bin.size - start);
+    if(pos == NULL) {
+        return enif_make_badarg(env);
+    }
+
+    ERL_NIF_TERM begin = enif_make_sub_binary(env, argv[0], start, pos - bin.data - start);
+    ERL_NIF_TERM rest = enif_make_sub_binary(
+            env, argv[0], pos - bin.data + 1, bin.data + bin.size - pos - 1);
+
+    return enif_make_tuple2(env, begin, rest);
 }

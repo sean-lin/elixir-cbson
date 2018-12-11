@@ -259,3 +259,32 @@ defmodule EncodeBench do
   end
 end
 
+defmodule SplitBench do
+  use Benchfella
+  
+  bench "peek_cstring(elixir)", [docs: doc()] do
+    docs |> Enum.each(fn x ->
+      peek_cstring(x, 4)
+    end)
+  end
+  
+  bench "peek_cstring(cbson)" , [docs: doc()] do
+    docs |> Enum.each(fn x ->
+      CBson.nif_split_by_char(x, 0, 4)
+    end)
+  end
+
+  defp peek_cstring(buffer, drop) do
+    {pos, _len} = :binary.match(buffer, "\0", [{:scope, {drop, byte_size(buffer) - drop}}])
+    len = pos - drop
+    <<_::size(drop)-binary, name::size(len)-binary, 0::size(8), rest::binary>> = buffer
+    {name, rest}
+  end
+
+  defp doc do
+    Data.get_bson() |> Enum.map(fn x -> 
+      <<0, 0, 0, 0, "database.hello_world", 0, x::binary>>
+    end)
+  end
+end
+

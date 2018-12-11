@@ -94,6 +94,7 @@ static ErlNifFunc funcs[] = {
     {"nif_encode_init", 2, encode_init},
     {"nif_encode_iter", 2, encode_iter},
     {"nif_b64encode", 1, b64encode},
+    {"nif_split_by_char", 3, split_by_char},
     {"nif_objectid2bin", 1, objectid2bin},
     {"nif_bin2objectid", 1, bin2objectid}};
 
