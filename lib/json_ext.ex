@@ -93,6 +93,10 @@ defmodule Bson.JsonExt do
     %{"$binary" => CBson.nif_b64encode(bin), "$type" => xsubty(subtype)}
   end
 
+  def dump(%Bson.Timestamp{ts: s}) do
+    %{"$date" => %{"$numberLong" => Integer.to_string(s)}}
+  end
+
   def dump(bson) when is_map(bson) do
     :maps.map(fn _k, v -> dump(v) end, bson)
   end
@@ -156,6 +160,7 @@ defmodule Bson.JsonExt do
   def plain_dump(%Bson.ObjectId{oid: oid}), do: Bson.hex(oid)
   def plain_dump(%Bson.UTC{ms: ms}), do: ms
   def plain_dump(%Bson.Bin{bin: bin}), do: CBson.nif_b64encode(bin)
+  def plain_dump(%Bson.Timestamp{ts: s}), do: s
 
   def plain_dump(bson) when is_map(bson) do
     :maps.map(fn _k, v -> plain_dump(v) end, bson)

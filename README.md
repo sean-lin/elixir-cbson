@@ -36,6 +36,8 @@ The options for decode are:
   instead of `nil`.
 * `:use_null` - Returns the atom `null` instead of `nil` when decoding
   BSON. This is a short hand for `{nil_term, null}`.
+* `:return_josn` - Returns objects converted `ObjectId`, `UTC`, `Bin`, `Regex` and
+  `Timestamp` to suitable types for easier convert to json 
 * `:return_trailer` - If any data is found after the first
   BSON term is decoded the return value of decode/2 becomes
   `{:has_trailer, first_term, rest_data::iodata()}`. This is useful to
@@ -67,6 +69,7 @@ The options for encode are:
 
 BSON Type | Elixir Type       | Notes
 ----------|-------------------|-----------------------
+ObjectId  | %Bson.ObjectId{}  | 
 double    | double            |
 string    | string            |
 doc       | map or keywords   | :return_lists
@@ -75,7 +78,7 @@ binary    | %Bson.Bin{}       |
 bool      | atom: true/false  |
 datetime  | %Bson.UTC{}       |
 Null      | nil               | :use_null/:nil_term
-Regex     | %Bson.Regex{}     | 
+Regex     | %Bson.Regex{}     |  
 JavaScript|                   | not supported
 int32     | integer           |
 Timestamp | %Bson.Timestamp{} |

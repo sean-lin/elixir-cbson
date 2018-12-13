@@ -16,7 +16,7 @@
 #define BSON_REGEX 0x0B
 // deprecated DBPointer         0x0C
 #define BSON_JS 0x0D
-#define BSON_SYMBOL 0x0E // deprecated, read only and encode string back
+#define BSON_SYMBOL 0x0E  // deprecated, read only and encode string back
 #define BSON_JS_WS 0x0F
 #define BSON_INT32 0x10
 #define BSON_TIMESTAMP 0x11
@@ -54,10 +54,9 @@
 #define ATOM_NAN "nan"
 #else
 
-#endif // ERICMJ_MONGODB
+#endif  // ERICMJ_MONGODB
 
-typedef struct
-{
+typedef struct {
     ERL_NIF_TERM atom_ok;
     ERL_NIF_TERM atom_error;
     ERL_NIF_TERM atom_nil;
@@ -73,6 +72,7 @@ typedef struct
     ERL_NIF_TERM atom_use_null;
     ERL_NIF_TERM atom_nil_term;
     ERL_NIF_TERM atom_return_atom;
+    ERL_NIF_TERM atom_return_json;
 
     ERL_NIF_TERM atom_struct;
     ERL_NIF_TERM atom_objectid;
@@ -107,7 +107,8 @@ extern const unsigned char *nan2;
 ERL_NIF_TERM make_atom(ErlNifEnv *env, const char *name);
 int make_atom_by_binary(ErlNifEnv *env, ERL_NIF_TERM *out, ERL_NIF_TERM *bin);
 ERL_NIF_TERM make_error(cbson_st *st, ErlNifEnv *env, const char *error);
-ERL_NIF_TERM make_obj_error(cbson_st *st, ErlNifEnv *env, const char *error, ERL_NIF_TERM obj);
+ERL_NIF_TERM make_obj_error(cbson_st *st, ErlNifEnv *env, const char *error,
+                            ERL_NIF_TERM obj);
 int get_bytes_per_iter(ErlNifEnv *env, ERL_NIF_TERM val, size_t *bpi);
 int get_nil_term(ErlNifEnv *env, ERL_NIF_TERM val, ERL_NIF_TERM *nil_term);
 int should_yield(ErlNifEnv *env, int *start, int end, size_t bytes_per_red);
@@ -125,4 +126,6 @@ ERL_NIF_TERM bin2objectid(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]);
 ERL_NIF_TERM b64encode(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]);
 ERL_NIF_TERM split_by_char(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]);
 
-#endif // __CBSON__
+void c_b64encode(unsigned char *buffer, const unsigned char *text, size_t sz);
+
+#endif  // __CBSON__

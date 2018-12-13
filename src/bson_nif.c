@@ -5,11 +5,9 @@ const unsigned char *nan2 = "\0\0\0\0\0\0\xf8\xff";
 const unsigned char *inf = "\0\0\0\0\0\0\xf0\x7f";
 const unsigned char *ninf = "\0\0\0\0\0\0\xf0\xff";
 
-static int load(ErlNifEnv *env, void **priv, ERL_NIF_TERM info)
-{
+static int load(ErlNifEnv *env, void **priv, ERL_NIF_TERM info) {
     cbson_st *st = enif_alloc(sizeof(cbson_st));
-    if (st == NULL)
-    {
+    if (st == NULL) {
         return 1;
     }
 
@@ -28,6 +26,7 @@ static int load(ErlNifEnv *env, void **priv, ERL_NIF_TERM info)
     MA(atom_return_trailer, "return_trailer");
     MA(atom_has_trailer, "has_trailer");
     MA(atom_return_atom, "return_atom");
+    MA(atom_return_json, "return_json");
     MA(atom_use_null, "use_null");
     MA(atom_nil_term, "nil_term");
 
@@ -52,50 +51,39 @@ static int load(ErlNifEnv *env, void **priv, ERL_NIF_TERM info)
     MA(atom_ninf, ATOM_NINF);
     MA(atom_nan, ATOM_NAN);
 
-    st->res_dec = enif_open_resource_type(
-        env,
-        NULL,
-        "bson_decoder",
-        dec_destroy,
-        ERL_NIF_RT_CREATE | ERL_NIF_RT_TAKEOVER,
-        NULL);
+    st->res_dec =
+        enif_open_resource_type(env, NULL, "bson_decoder", dec_destroy,
+                                ERL_NIF_RT_CREATE | ERL_NIF_RT_TAKEOVER, NULL);
 
-    st->res_enc = enif_open_resource_type(
-        env,
-        NULL,
-        "bson_encoder",
-        enc_destroy,
-        ERL_NIF_RT_CREATE | ERL_NIF_RT_TAKEOVER,
-        NULL);
+    st->res_enc =
+        enif_open_resource_type(env, NULL, "bson_encoder", enc_destroy,
+                                ERL_NIF_RT_CREATE | ERL_NIF_RT_TAKEOVER, NULL);
 
     *priv = (void *)st;
     return 0;
 }
 
-static int reload(ErlNifEnv *env, void **priv, ERL_NIF_TERM info)
-{
+static int reload(ErlNifEnv *env, void **priv, ERL_NIF_TERM info) {
     return 0;
 }
 
-static int upgrade(ErlNifEnv *env, void **priv, void **old_priv, ERL_NIF_TERM info)
-{
+static int upgrade(ErlNifEnv *env, void **priv, void **old_priv,
+                   ERL_NIF_TERM info) {
     return reload(env, priv, info);
 }
 
-static void unload(ErlNifEnv *env, void *priv)
-{
+static void unload(ErlNifEnv *env, void *priv) {
     enif_free(priv);
     return;
 }
 
-static ErlNifFunc funcs[] = {
-    {"nif_decode_init", 2, decode_init},
-    {"nif_decode_iter", 4, decode_iter},
-    {"nif_encode_init", 2, encode_init},
-    {"nif_encode_iter", 2, encode_iter},
-    {"nif_b64encode", 1, b64encode},
-    {"nif_split_by_char", 3, split_by_char},
-    {"nif_objectid2bin", 1, objectid2bin},
-    {"nif_bin2objectid", 1, bin2objectid}};
+static ErlNifFunc funcs[] = {{"nif_decode_init", 2, decode_init},
+                             {"nif_decode_iter", 4, decode_iter},
+                             {"nif_encode_init", 2, encode_init},
+                             {"nif_encode_iter", 2, encode_iter},
+                             {"nif_b64encode", 1, b64encode},
+                             {"nif_split_by_char", 3, split_by_char},
+                             {"nif_objectid2bin", 1, objectid2bin},
+                             {"nif_bin2objectid", 1, bin2objectid}};
 
 ERL_NIF_INIT(Elixir.CBson, funcs, &load, &reload, &upgrade, &unload);
