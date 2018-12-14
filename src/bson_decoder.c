@@ -211,17 +211,12 @@ static int make_array(ErlNifEnv* env, ERL_NIF_TERM pairs, ERL_NIF_TERM* out) {
 static inline int read_bson_cstring(ErlNifEnv* env, Decoder* d,
                                     ERL_NIF_TERM* val, int max_len,
                                     int as_integer) {
-    int i;
     unsigned char* ptr = d->p + d->i;
+    unsigned char *pos =
+        (unsigned char *)memchr(ptr, '\0', max_len);
+    if(!pos) return 0;
+    int i = pos - ptr;
 
-    for (i = 0;; i++) {
-        if (i >= max_len) {
-            return 0;
-        }
-        if (ptr[i] == '\0') {
-            break;
-        }
-    }
     if (as_integer) {
         int n = atoi((const char*)ptr);
         *val = enif_make_int(env, n);
