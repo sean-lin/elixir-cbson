@@ -62,7 +62,7 @@ defmodule CBsonTest do
     bin = CBson.encode(ctx.term)
     assert bin == ctx.bson 
   end
-
+  
   test "encode large" do
     bin = :binary.copy("12345678", 253) <> "1234567"
     t = [a: bin, b: %{c: 1}, c: []]
@@ -99,6 +99,14 @@ defmodule CBsonTest do
     t = %{a: [1, {2, 3}]}
     error = catch_throw CBson.encode(t)
     assert {:error, {:error_term, {2, 3}}} == error
+    
+    t = [{:a, 1, 3}]
+    error = catch_throw CBson.encode(t)
+    assert {:error, {:invalid_object_member, {:a, 1, 3}}} == error
+    
+    t = [{:a, 1} | %{}]
+    error = catch_throw CBson.encode(t)
+    assert {:error, {:invalid_keywords, %{}}} == error
   end
 
   test "regex" do
