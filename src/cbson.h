@@ -1,7 +1,7 @@
 #ifndef __CBSON__
 #include "erl_nif.h"
 
-#define DEFAULT_BYTES_PER_REDUCTION 20
+#define DEFAULT_BYTES_PER_REDUCTION 50
 
 #define BSON_DOUBLE 0x01
 #define BSON_STRING 0x02

@@ -10,14 +10,12 @@
 
 #define STACK_TYPE_UNDEFINED -3
 #define STACK_TYPE_DOC_LIST -2
-#define STACK_TYPE_DOC_MAP -1
 #define STACK_TYPE_ARRAY 0
 
 typedef struct { 
     int32_t status; // negative: doc, nonnegative: index of array
     int32_t* ptr; // The pointer of length;
     int32_t written;
-    ErlNifMapIterator iter;
 } Stack;
 
 typedef struct {
@@ -58,6 +56,45 @@ ErlNifBinary* enc_alloc_bin(Encoder* e) {
     e->bin_top++;
     e->i = 0;
     return bin;
+}
+
+static int enc_map_to_ebson(ErlNifEnv* env, ERL_NIF_TERM map, ERL_NIF_TERM* out) {
+    ErlNifMapIterator iter;
+    size_t size;
+
+    ERL_NIF_TERM list;
+    ERL_NIF_TERM tuple;
+    ERL_NIF_TERM key;
+    ERL_NIF_TERM val;
+
+    if(!enif_get_map_size(env, map, &size)) {
+        return 0;
+    }
+
+    list = enif_make_list(env, 0);
+
+    if(size == 0) {
+        *out = list;
+        return 1;
+    }
+
+    if(!enif_map_iterator_create(env, map, &iter, ERL_NIF_MAP_ITERATOR_HEAD)) {
+        return 0;
+    }
+
+    do {
+        if(!enif_map_iterator_get_pair(env, &iter, &key, &val)) {
+            enif_map_iterator_destroy(env, &iter);
+            return 0;
+        }
+        tuple = enif_make_tuple2(env, key, val);
+        list = enif_make_list_cell(env, tuple, list);
+    } while(enif_map_iterator_next(env, &iter));
+
+    enif_map_iterator_destroy(env, &iter);
+
+    *out = list;
+    return 1;
 }
 
 static inline
@@ -328,12 +365,6 @@ void enc_destroy(ErlNifEnv* env, void* obj) {
     Encoder* e = (Encoder*)obj;
 
     if(e->st_data != NULL) {
-        for(i = 0; i < e->st_top; i++) {
-            Stack* st = e->st_data + i;
-            if(!enc_stack_is_list(st) && st->status == STACK_TYPE_DOC_MAP) {
-                enif_map_iterator_destroy(env, &(st->iter));
-            }
-        }
         enif_free(e->st_data);
     }
     if(e->bin != NULL) {
@@ -400,7 +431,6 @@ ERL_NIF_TERM encode_init(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     }
     
     tmp_argv[0] = enif_make_resource(env, e);
-    tmp_argv[1] = enif_make_list(env, 1, argv[0]);
 
     enif_release_resource(e);
 
@@ -423,14 +453,19 @@ ERL_NIF_TERM encode_init(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
 
     if(enif_is_list(env, argv[0])) {
         enc_push(e, STACK_TYPE_DOC_LIST);
+        tmp_argv[1] = enif_make_list(env, 1, argv[0]);
     }else if(enif_is_map(env, argv[0])) {
         ERL_NIF_TERM key;
         if(enif_get_map_value(env, argv[0], st->atom_struct, &key)) {
             return enif_make_badarg(env);
         }
-        enc_push(e, STACK_TYPE_DOC_MAP);
-        enif_map_iterator_create(
-                env, argv[0], &(enc_curr(e)->iter), ERL_NIF_MAP_ITERATOR_FIRST);
+        ERL_NIF_TERM ebson;
+        if(!enc_map_to_ebson(env, argv[0], &ebson)) {
+            return enif_make_badarg(env);
+        }
+
+        enc_push(e, STACK_TYPE_DOC_LIST);
+        tmp_argv[1] = enif_make_list(env, 1, ebson);
     }
     
     return encode_iter(env, 2, tmp_argv);
@@ -485,37 +520,27 @@ next:
             curr_stack->status += 1;
         } else {
             // 当前栈是 doc
-            if(enif_is_list(env, curr)) {
-                ERL_NIF_TERM item;
-                if(!enif_get_list_cell(env, curr, &item, &curr)) {
-                    enc_write_uint8(e, 0x0);
-                    enc_pop(e);
-                    continue;
-                }
-                if(!enif_get_tuple(env, item, &arity, &tuple)) {
-                    ret = enc_obj_error(e, "invalid_object_member", item);
-                    goto done;
-                }
-                if(arity != 2) {
-                    ret = enc_obj_error(e,   "invalid_object_member", item);
-                    goto done;
-                }
-                key = tuple[0];
-                value = tuple[1];
-            } else {
-                if(curr_stack->status != STACK_TYPE_DOC_MAP) {
-                    ret = enc_obj_error(e, "invalid_keywords", curr);
-                    goto done;
-                }
-                if(!enif_map_iterator_get_pair(env, &(curr_stack->iter), &key, &value)) {
-                    enif_map_iterator_destroy(env, &(curr_stack->iter));
-                    enc_write_uint8(e, 0x0);
-                    enc_pop(e);
-                    continue;
-                }
-                enif_map_iterator_next(env, &(curr_stack->iter));
+            if(!enif_is_list(env, curr)) {
+                ret = enc_obj_error(e,   "invalid_keywords", curr);
+                goto done;
             }
-
+            
+            ERL_NIF_TERM item;
+            if(!enif_get_list_cell(env, curr, &item, &curr)) {
+                enc_write_uint8(e, 0x0);
+                enc_pop(e);
+                continue;
+            }
+            if(!enif_get_tuple(env, item, &arity, &tuple)) {
+                ret = enc_obj_error(e, "invalid_object_member", item);
+                goto done;
+            }
+            if(arity != 2) {
+                ret = enc_obj_error(e,   "invalid_object_member", item);
+                goto done;
+            }
+            key = tuple[0];
+            value = tuple[1];
 
             if(enif_is_atom(env, key) && enif_compare(key, st->atom_struct) == 0) {
                 goto next;
@@ -612,9 +637,11 @@ next:
                 // doc
 encode_map_doc:
                 *ptr = BSON_DOCUMENT;
-                enc_push(e, STACK_TYPE_DOC_MAP);
-                enif_map_iterator_create(
-                        env, value, &(enc_curr(e)->iter), ERL_NIF_MAP_ITERATOR_FIRST);
+                enc_push(e, STACK_TYPE_DOC_LIST);
+                if(!enc_map_to_ebson(env, value, &value)) {
+                    ret = enc_obj_error(e, "error_map", value);
+                    goto done;
+                }
                 stack = enif_make_list_cell(env, curr, stack);
                 stack = enif_make_list_cell(env, value, stack);
                 continue;
