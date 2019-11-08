@@ -45,7 +45,7 @@ defmodule CBsonTest do
     ret = CBson.decode(ctx.bson, [:return_atom])
     assert ret == ctx.term
   end
-  
+
   test "decode deep" do
     term = %{a: %{b: %{c: %{d: %{e: %{f: [[[[[[[[[[[[[[[[[[[[[[[[[[%{z: 0}]]]]]]]]]]]]]]]]]]]]]]]]]]}}}}}}
     bson = CBson.encode(term)
@@ -60,9 +60,9 @@ defmodule CBsonTest do
 
   test "encode", ctx do
     bin = CBson.encode(ctx.term)
-    assert bin == ctx.bson 
+    assert bin == ctx.bson
   end
-  
+
   test "encode large" do
     bin = :binary.copy("12345678", 253) <> "1234567"
     t = [a: bin, b: %{c: 1}, c: []]
@@ -83,9 +83,9 @@ defmodule CBsonTest do
   end
 
   test "decode cmd" do
-    bin = <<92, 0, 0, 0, 16, 99, 111, 110, 110, 101, 99, 116, 105, 111, 110, 73, 100, 0, 26, 22, 0, 0, 8, 117, 112, 
-    100, 97, 116, 101, 100, 69, 120, 105, 115, 116, 105, 110, 103, 0, 0, 16, 110, 0, 0, 0, 0, 0, 16, 115, 121, 
-    110, 99, 77, 105, 108, 108, 105, 115, 0, 0, 0, 0, 0, 10, 119, 114, 105, 116, 116, 101, 110, 84, 111, 0, 10, 
+    bin = <<92, 0, 0, 0, 16, 99, 111, 110, 110, 101, 99, 116, 105, 111, 110, 73, 100, 0, 26, 22, 0, 0, 8, 117, 112,
+    100, 97, 116, 101, 100, 69, 120, 105, 115, 116, 105, 110, 103, 0, 0, 16, 110, 0, 0, 0, 0, 0, 16, 115, 121,
+    110, 99, 77, 105, 108, 108, 105, 115, 0, 0, 0, 0, 0, 10, 119, 114, 105, 116, 116, 101, 110, 84, 111, 0, 10,
     101, 114, 114, 0, 1, 111, 107, 0, 0, 0, 0, 0, 0, 0, 240, 63, 0>>
     assert %{ok: 1.0} = CBson.decode(bin, [:return_atom])
   end
@@ -94,16 +94,16 @@ defmodule CBsonTest do
     error = catch_throw CBson.decode <<1, 2, 0, 0>>
     assert {:error, :invalid_bson} == error
   end
-  
+
   test "encode fail" do
     t = %{a: [1, {2, 3}]}
     error = catch_throw CBson.encode(t)
     assert {:error, {:error_term, {2, 3}}} == error
-    
+
     t = [{:a, 1, 3}]
     error = catch_throw CBson.encode(t)
     assert {:error, {:invalid_object_member, {:a, 1, 3}}} == error
-    
+
     t = [{:a, 1} | %{}]
     error = catch_throw CBson.encode(t)
     assert {:error, {:invalid_keywords, %{}}} == error
@@ -117,17 +117,17 @@ defmodule CBsonTest do
   test "double" do
     t = %{d: :nan}
     assert <<16, 0, 0, 0, 1, 100, 0, 0, 0, 0, 0, 0, 0, 248, 127, 0>> == CBson.encode(t)
-    
+
     t = %{d: :"+inf"}
     assert <<16, 0, 0, 0, 1, 100, 0, 0, 0, 0, 0, 0, 0, 240, 127, 0>> == CBson.encode(t)
-    
+
     t = %{d: :"-inf"}
     assert <<16, 0, 0, 0, 1, 100, 0, 0, 0, 0, 0, 0, 0, 240, 255, 0>> == CBson.encode(t)
-   
+
     t = %{a: :nan, b: :"+inf", c: "-inf"}
     assert t == CBson.encode(t) |> CBson.decode([:return_atom])
   end
-  
+
   test "save struct" do
     t = %{__struct__: ABC, a: 1, b: 2}
     assert CBson.encode(%{key: t}) |> CBson.decode([:return_atom]) == %{key: :maps.remove(:__struct__, t)}
@@ -141,10 +141,10 @@ defmodule CBsonTest do
   test "objectid" do
     assert "1234567890220200f3abcdef" == (Bson.ObjectId.from_string("1234567890220200f3abcdef") |> to_string())
     assert_raise ArgumentError, fn ->
-      Bson.ObjectId.from_string("1234567890220200f3abcde") 
+      Bson.ObjectId.from_string("1234567890220200f3abcde")
     end
     assert_raise ArgumentError, fn ->
-      Bson.ObjectId.from_string("1234567890220200f3abcdez") 
+      Bson.ObjectId.from_string("1234567890220200f3abcdez")
     end
     assert_raise ArgumentError, fn ->
       %Bson.ObjectId{oid: <<82, 224, 229, 161, 0, 0, 2, 0, 3, 0, 0>>} |> to_string
@@ -167,10 +167,61 @@ defmodule CBsonTest do
     end
   end
 
+  # 需要运行一段时间没有coredump
+  @tag :long_term_test
+  test "long term packet lower than 2k" do
+    Enum.map(1..8, fn _ ->
+      {:ok, pid} = Task.Supervisor.start_link()
+
+      Task.Supervisor.async(pid, fn ->
+        for _ <- 1..999_999_999 do
+          data =
+            Enum.reduce(1..5, %{}, fn _, acc ->
+              rand_byte = :crypto.strong_rand_bytes(:rand.uniform(5))
+              %{aaa: acc, bbb: acc, ccc: rand_byte}
+            end)
+
+          for _ <- 1..50 do
+            CBson.encode(data)
+          end
+
+          :timer.sleep(10)
+        end
+      end)
+    end)
+
+    :timer.sleep(120_000)
+  end
+
+  @tag :long_term_test
+  test "long term packet larger than 2k" do
+    Enum.map(1..8, fn _ ->
+      {:ok, pid} = Task.Supervisor.start_link()
+
+      Task.Supervisor.async(pid, fn ->
+        for _ <- 1..999_999_999 do
+          data =
+            Enum.reduce(1..10, %{}, fn _, acc ->
+              rand_byte = :crypto.strong_rand_bytes(:rand.uniform(5))
+              %{aaa: acc, bbb: acc, ccc: rand_byte}
+            end)
+
+          for _ <- 1..10 do
+            CBson.encode(data)
+          end
+
+          :timer.sleep(10)
+        end
+      end)
+    end)
+
+    :timer.sleep(120_000)
+  end
+
   defp deep(0, acc) do
     acc
   end
   defp deep(n, acc) do
-   deep(n - 1, %{"name" => acc}) 
+   deep(n - 1, %{"name" => acc})
   end
 end

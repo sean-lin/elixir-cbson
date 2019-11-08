@@ -15,7 +15,8 @@
 
 typedef struct { 
     int32_t status; // negative: doc, nonnegative: index of array
-    int32_t* ptr; // The pointer of length;
+    int32_t bin_offset; // 写入长度的bin offset
+    int32_t length_offset; // bin->data　中长度的　offset
     int32_t written;
     ErlNifMapIterator iter;
 } Stack;
@@ -255,7 +256,7 @@ Stack* enc_curr(Encoder* e) {
 }
 
 static
-int32_t * enc_push(Encoder* e, int32_t status) {
+void * enc_push(Encoder* e, int32_t status) {
     Stack* st;
 
     if(e->st_top >= e->st_size) {
@@ -272,18 +273,22 @@ int32_t * enc_push(Encoder* e, int32_t status) {
     st->written = 0;
     e->st_top++;
     
-    st->ptr = (int32_t*)enc_skip_len(e, sizeof(int32_t));
-    return st->ptr;
+    enc_skip_len(e, sizeof(int32_t));
+    st->length_offset = e->i - sizeof(int32_t);
+    st->bin_offset = e->bin_top - 1;
 }
 
 static 
 void enc_pop(Encoder* e) {
     Stack* st = e->st_data + e->st_top - 1;
     int32_t written = st->written;
-    *(st->ptr) = written;
+    ErlNifBinary *bin = e->bin + st->bin_offset;
+    int32_t *bin_length_mem = (int32_t*)(bin->data + st->length_offset);
+    *(bin_length_mem) = written;
 
     st->status = STACK_TYPE_UNDEFINED; 
-    st->ptr = 0; 
+    st->length_offset = -1;
+    st->bin_offset = -1;
     st->written = 0;
     e->st_top--;
    

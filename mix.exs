@@ -17,7 +17,7 @@ defmodule Cbson.Mixfile do
 
   def project do
     [app: :cbson,
-     version: "0.0.7",
+     version: "0.0.8",
      elixir: "~> 1.7",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -42,7 +42,7 @@ defmodule Cbson.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [ 
+    [
       {:benchfella, "~> 0.3.0", only: :bench},
     ]
   end
