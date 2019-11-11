@@ -11,7 +11,6 @@ ERL_NIF_TERM make_atom(ErlNifEnv *env, const char *name) {
 
 int make_atom_by_binary(ErlNifEnv *env, ERL_NIF_TERM *in, ERL_NIF_TERM *out) {
     ErlNifBinary bin;
-    ERL_NIF_TERM ret;
     if (!enif_inspect_binary(env, *in, &bin)) {
         return 0;
     }
@@ -197,7 +196,6 @@ ERL_NIF_TERM b64encode(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
 ERL_NIF_TERM split_by_char(ErlNifEnv *env, int argc,
                            const ERL_NIF_TERM argv[]) {
     ErlNifBinary bin;
-    ERL_NIF_TERM ret;
     int c, start;
 
     if (argc < 3) {

@@ -256,7 +256,7 @@ Stack* enc_curr(Encoder* e) {
 }
 
 static
-void * enc_push(Encoder* e, int32_t status) {
+void enc_push(Encoder* e, int32_t status) {
     Stack* st;
 
     if(e->st_top >= e->st_size) {
@@ -457,7 +457,9 @@ ERL_NIF_TERM encode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     ERL_NIF_TERM stack = argv[1];
     ERL_NIF_TERM curr, key, value, ret;
 
-    int start = enc_write_len(e);
+    // should yield 注释了．start 暂时不用
+    // int start = enc_write_len(e);
+    enc_write_len(e);
 
     const ERL_NIF_TERM* tuple;
     int arity;
