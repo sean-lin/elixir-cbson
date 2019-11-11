@@ -1,9 +1,9 @@
 #include "cbson.h"
 
-const unsigned char *nan1 = "\0\0\0\0\0\0\xf8\x7f";
-const unsigned char *nan2 = "\0\0\0\0\0\0\xf8\xff";
-const unsigned char *inf = "\0\0\0\0\0\0\xf0\x7f";
-const unsigned char *ninf = "\0\0\0\0\0\0\xf0\xff";
+const unsigned char *nan1 = (unsigned char *)"\0\0\0\0\0\0\xf8\x7f";
+const unsigned char *nan2 = (unsigned char *)"\0\0\0\0\0\0\xf8\xff";
+const unsigned char *inf = (unsigned char *)"\0\0\0\0\0\0\xf0\x7f";
+const unsigned char *ninf = (unsigned char *)"\0\0\0\0\0\0\xf0\xff";
 
 static int load(ErlNifEnv *env, void **priv, ERL_NIF_TERM info) {
     cbson_st *st = enif_alloc(sizeof(cbson_st));
