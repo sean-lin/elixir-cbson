@@ -1,5 +1,7 @@
 # elixir-cbson
 
+[![Hex.pm Version](https://img.shields.io/hexpm/v/cbson.svg?style=flat)](https://hex.pm/packages/cbson)
+
 BSON NIF for Elixir language http://bsonspec.org
 
 ## THANKS
