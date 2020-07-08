@@ -39,6 +39,15 @@ typedef struct {
     int i;
 } Encoder;
 
+static inline char check_ename(Encoder* e, unsigned char* bin, int32_t size) {
+    for(int i = 0; i < size; i ++) {
+        if(bin[i] == 0x0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 static Stack* enc_curr(Encoder*);
 
 static
@@ -132,7 +141,7 @@ int enc_atom(Encoder* e, ERL_NIF_TERM val) {
     return 1;
 }
 
-static 
+static
 int enc_ename(Encoder* e, ERL_NIF_TERM val) {
     char atom[512];
     ErlNifBinary bin;
@@ -141,6 +150,9 @@ int enc_ename(Encoder* e, ERL_NIF_TERM val) {
         if(!enif_inspect_binary(e->env, val, &bin)) {
             return 0;
         }
+        if(!check_ename(e, bin.data, bin.size)) {
+            return 0;
+        };
         enc_write_bin(e, bin.data, bin.size);
         enc_write_uint8(e, 0x0);
     } else if(enif_is_atom(e->env, val)) {
@@ -148,6 +160,9 @@ int enc_ename(Encoder* e, ERL_NIF_TERM val) {
             return 0;
         }
         int32_t size = strlen(atom);
+        if(!check_ename(e, (unsigned char*) atom, size)) {
+            return 0;
+        };
         enc_write_bin(e, (unsigned char*) atom, size);
         enc_write_uint8(e, 0x0);
     } else {
@@ -532,7 +547,7 @@ next:
             
             ptr = enc_skip_len(e, sizeof(unsigned char));
             if(!enc_ename(e, key)) {
-                ret = enc_obj_error(e, "invalid_string", key);
+                ret = enc_obj_error(e, "invalid_key", key);
                 goto done;
             }
         }

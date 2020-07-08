@@ -70,6 +70,16 @@ defmodule CBsonTest do
     assert byte_size(cbson) == 2067
   end
 
+  test "encode zero key" do
+    try do
+      CBson.encode(%{"a\0b" => 1})
+    catch
+      a, b ->
+        assert {a, b} == {:throw, {:error, {:invalid_key, "a\0b"}}}
+    end
+    assert CBson.encode(%{"ab" => 1}) == <<13, 0, 0, 0, 16, 97, 98, 0, 1, 0, 0, 0, 0>>
+  end
+
   test "decode trailer" do
     t = %{"a"=> 1}
     bin = :binary.copy(CBson.encode(t), 2)
