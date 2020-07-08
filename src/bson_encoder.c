@@ -40,12 +40,7 @@ typedef struct {
 } Encoder;
 
 static inline char check_ename(Encoder* e, unsigned char* bin, int32_t size) {
-    for(int i = 0; i < size; i ++) {
-        if(bin[i] == 0x0) {
-            return 0;
-        }
-    }
-    return 1;
+    return memchr(bin, 0x0, size) == NULL;
 }
 
 static Stack* enc_curr(Encoder*);

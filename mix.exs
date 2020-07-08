@@ -17,7 +17,7 @@ end
 defmodule Cbson.Mixfile do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.1.3"
 
   def project do
     [
@@ -48,7 +48,7 @@ defmodule Cbson.Mixfile do
       name: :cbson,
       maintainers: [],
       licenses: ["MIT"],
-      files: ["lib/*", "src/*", "priv/*", "mix.exs", "README*", "LICENSE*"],
+      files: ["lib/*", "src/*", "priv/*", "mix.exs", "Makefile", "README*", "LICENSE*"],
       links: %{
         "GitHub" => "https://github.com/sean-lin/elixir-cbson"
       }
