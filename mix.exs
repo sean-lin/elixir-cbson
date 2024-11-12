@@ -71,6 +71,7 @@ defmodule Cbson.Mixfile do
   defp deps do
     [
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
+      {:mongodb, "~> 0.5.1", only: :bench},
       {:benchfella, "~> 0.3.0", only: :bench}
     ]
   end

@@ -1,6 +1,6 @@
 defmodule Data do
   def get_bson do
-    get_data |> Enum.map(&CBson.encode/1)
+    get_data() |> Enum.map(&CBson.encode/1)
   end
 
   def get_data do
@@ -231,6 +231,10 @@ defmodule DecodBench do
     bson |> Enum.each(&Bson.decode/1)
   end
 
+  bench "decoder(Mongodb.BSON)", bson: Data.get_bson() do
+    bson |> Enum.each(&BSON.Decoder.decode/1)
+  end
+
   bench "load_json(cbson)", json: get_json() do
     json |> Enum.each(&Bson.JsonExt.load/1)
   end
@@ -245,6 +249,10 @@ defmodule EncodeBench do
 
   bench "encode(cbson)", bson: get_bson() do
     bson |> Enum.each(&Bson.encode/1)
+  end
+
+  bench "encode(Mongo.BSON)", bson: get_BSON() do
+    bson |> Enum.each(&BSON.Encoder.encode/1)
   end
 
   bench "to_json(cbson)", bson: get_bson() do
@@ -278,6 +286,10 @@ defmodule EncodeBench do
 
   defp get_bson do
     Data.get_bson() |> Enum.map(&CBson.decode/1)
+  end
+
+  defp get_BSON do
+    Data.get_bson() |> Enum.map(&BSON.Decoder.decode/1)
   end
 end
 

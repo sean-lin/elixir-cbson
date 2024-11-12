@@ -1,0 +1,5 @@
+BasedOnStyle: Google
+IndentWidth: 4
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortBlocksOnASingleLine: SBS_Empty
+AllowShortFunctionsOnASingleLine: SFS_Empty

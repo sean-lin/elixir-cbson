@@ -14,8 +14,8 @@ enum {
 } BsonState;
 
 typedef struct {
-    ErlNifEnv* env;
-    cbson_st* atoms;
+    ErlNifEnv *env;
+    cbson_st *atoms;
 
     ERL_NIF_TERM arg;
 
@@ -26,34 +26,34 @@ typedef struct {
     int return_json;
     ERL_NIF_TERM nil_term;
 
-    unsigned char* p;
+    unsigned char *p;
     int i;
     int len;
 
-    char* st_data;
-    int* st_end;
+    char *st_data;
+    int *st_end;
     int st_size;
     int st_top;
 } Decoder;
 
-static inline char dec_curr(Decoder* d) {
-    return d->st_data[d->st_top - 1];
+static inline char dec_curr(Decoder *d) {
+    return d->st_data[d->st_top - 1]; 
 }
 
-static inline int dec_curr_end(Decoder* d) {
-    return d->st_end[d->st_top - 1];
+static inline int dec_curr_end(Decoder *d) {
+    return d->st_end[d->st_top - 1]; 
 }
 
-static inline int dec_top(Decoder* d) {
+static inline int dec_top(Decoder *d) {
     return d->st_top;
 }
 
-void dec_push(Decoder* d, char val, int len) {
+void dec_push(Decoder *d, char val, int len) {
     if (d->st_top >= d->st_size) {
         int new_sz = d->st_size + STACK_SIZE_INC;
-        char* tmp_data =
-            (char*)enif_alloc(new_sz * (sizeof(char) + sizeof(int)));
-        int* tmp_len = (int*)(tmp_data + new_sz);
+        char *tmp_data =
+            (char *)enif_alloc(new_sz * (sizeof(char) + sizeof(int)));
+        int *tmp_len = (int *)(tmp_data + new_sz);
         memcpy(tmp_data, d->st_data, d->st_size * sizeof(char));
         memcpy(tmp_len, d->st_end, d->st_size * sizeof(int));
         enif_free(d->st_data);
@@ -71,7 +71,7 @@ void dec_push(Decoder* d, char val, int len) {
     d->st_top++;
 }
 
-static void dec_pop(Decoder* d, char val, int len) {
+static void dec_pop(Decoder *d, char val, int len) {
     assert(d->st_data[d->st_top - 1] == val && "popped invalid state.");
     assert(d->st_end[d->st_top - 1] == len && "popped invalid state.");
     d->st_data[d->st_top - 1] = st_invalid;
@@ -79,10 +79,10 @@ static void dec_pop(Decoder* d, char val, int len) {
     d->st_top--;
 }
 
-static Decoder* dec_new(ErlNifEnv* env) {
-    cbson_st* st = (cbson_st*)enif_priv_data(env);
+static Decoder *dec_new(ErlNifEnv *env) {
+    cbson_st *st = (cbson_st *)enif_priv_data(env);
 
-    Decoder* d = (Decoder*)enif_alloc_resource(st->res_dec, sizeof(Decoder));
+    Decoder *d = (Decoder *)enif_alloc_resource(st->res_dec, sizeof(Decoder));
 
     if (d == NULL) {
         return NULL;
@@ -102,8 +102,8 @@ static Decoder* dec_new(ErlNifEnv* env) {
     d->i = -1;
 
     d->st_data =
-        (char*)enif_alloc(STACK_SIZE_INC * (sizeof(char) + sizeof(int)));
-    d->st_end = (int*)(d->st_data + STACK_SIZE_INC);
+        (char *)enif_alloc(STACK_SIZE_INC * (sizeof(char) + sizeof(int)));
+    d->st_end = (int *)(d->st_data + STACK_SIZE_INC);
     d->st_size = STACK_SIZE_INC;
     d->st_top = 0;
 
@@ -115,12 +115,12 @@ static Decoder* dec_new(ErlNifEnv* env) {
     return d;
 }
 
-static void dec_init(Decoder* d, ErlNifEnv* env, ERL_NIF_TERM arg,
-                     ErlNifBinary* bin) {
+static void dec_init(Decoder *d, ErlNifEnv *env, ERL_NIF_TERM arg,
+                     ErlNifBinary *bin) {
     d->env = env;
     d->arg = arg;
 
-    d->p = (unsigned char*)bin->data;
+    d->p = (unsigned char *)bin->data;
     d->len = bin->size;
 
     if (d->i < 0) {
@@ -130,19 +130,19 @@ static void dec_init(Decoder* d, ErlNifEnv* env, ERL_NIF_TERM arg,
     }
 }
 
-void dec_destroy(ErlNifEnv* env, void* obj) {
-    Decoder* d = (Decoder*)obj;
+void dec_destroy(ErlNifEnv *env, void *obj) {
+    Decoder *d = (Decoder *)obj;
 
     if (d->st_data != NULL) {
         enif_free(d->st_data);
     }
 }
 
-static inline ERL_NIF_TERM dec_error(Decoder* d, const char* err) {
+static inline ERL_NIF_TERM dec_error(Decoder *d, const char *err) {
     return make_error(d->atoms, d->env, err);
 }
 
-static int make_object(ErlNifEnv* env, ERL_NIF_TERM pairs, ERL_NIF_TERM* out,
+static int make_object(ErlNifEnv *env, ERL_NIF_TERM pairs, ERL_NIF_TERM *out,
                        int ret_lists, int ret_atom) {
     ERL_NIF_TERM ret;
     ERL_NIF_TERM key;
@@ -178,7 +178,7 @@ static int make_object(ErlNifEnv* env, ERL_NIF_TERM pairs, ERL_NIF_TERM* out,
     return 1;
 }
 
-static int make_array(ErlNifEnv* env, ERL_NIF_TERM pairs, ERL_NIF_TERM* out) {
+static int make_array(ErlNifEnv *env, ERL_NIF_TERM pairs, ERL_NIF_TERM *out) {
     int i = -1;
     int ki;
     ERL_NIF_TERM ret;
@@ -208,17 +208,16 @@ static int make_array(ErlNifEnv* env, ERL_NIF_TERM pairs, ERL_NIF_TERM* out) {
     return 1;
 }
 
-static inline int read_bson_cstring(ErlNifEnv* env, Decoder* d,
-                                    ERL_NIF_TERM* val, int max_len,
+static inline int read_bson_cstring(ErlNifEnv *env, Decoder *d,
+                                    ERL_NIF_TERM *val, int max_len,
                                     int as_integer) {
-    unsigned char* ptr = d->p + d->i;
-    unsigned char *pos =
-        (unsigned char *)memchr(ptr, '\0', max_len);
-    if(!pos) return 0;
+    unsigned char *ptr = d->p + d->i;
+    unsigned char *pos = (unsigned char *)memchr(ptr, '\0', max_len);
+    if (!pos) return 0;
     int i = pos - ptr;
 
     if (as_integer) {
-        int n = atoi((const char*)ptr);
+        int n = atoi((const char *)ptr);
         *val = enif_make_int(env, n);
     } else {
         *val = enif_make_sub_binary(env, d->arg, d->i, i);
@@ -227,8 +226,8 @@ static inline int read_bson_cstring(ErlNifEnv* env, Decoder* d,
     return 1;
 }
 
-static inline int read_bson_regex(ErlNifEnv* env, Decoder* d, int st_end,
-                                  ERL_NIF_TERM* val) {
+static inline int read_bson_regex(ErlNifEnv *env, Decoder *d, int st_end,
+                                  ERL_NIF_TERM *val) {
     ERL_NIF_TERM cstr;
 
     *val = enif_make_new_map(env);
@@ -247,13 +246,13 @@ static inline int read_bson_regex(ErlNifEnv* env, Decoder* d, int st_end,
     return 1;
 }
 
-static inline ERL_NIF_TERM read_bson_objectid(ErlNifEnv* env, Decoder* d) {
-    static const char* base16charidx = "0123456789abcdef";
+static inline ERL_NIF_TERM read_bson_objectid(ErlNifEnv *env, Decoder *d) {
+    static const char *base16charidx = "0123456789abcdef";
 
     if (d->return_json) {
         ERL_NIF_TERM ret = enif_make_new_map(env);
-        unsigned char* p = d->p + d->i;
-        unsigned char* ret_bin = enif_make_new_binary(env, 24, &ret);
+        unsigned char *p = d->p + d->i;
+        unsigned char *ret_bin = enif_make_new_binary(env, 24, &ret);
         for (int i = 0; i < 12; i++) {
             int j = i << 1;
             ret_bin[j] = base16charidx[p[i] >> 4];
@@ -270,13 +269,13 @@ static inline ERL_NIF_TERM read_bson_objectid(ErlNifEnv* env, Decoder* d) {
     return ret;
 }
 
-static inline ERL_NIF_TERM read_bson_binary(ErlNifEnv* env, Decoder* d,
+static inline ERL_NIF_TERM read_bson_binary(ErlNifEnv *env, Decoder *d,
                                             uint8_t subtype, int32_t len) {
     if (d->return_json) {
         ERL_NIF_TERM ret;
-        unsigned char* p = d->p + d->i;
+        unsigned char *p = d->p + d->i;
         int encode_sz = (len + 2) / 3 * 4;
-        unsigned char* buffer = enif_make_new_binary(env, encode_sz, &ret);
+        unsigned char *buffer = enif_make_new_binary(env, encode_sz, &ret);
         c_b64encode(buffer, p, len);
         return ret;
     }
@@ -296,7 +295,7 @@ static inline ERL_NIF_TERM read_bson_binary(ErlNifEnv* env, Decoder* d,
     return ret;
 }
 
-static inline ERL_NIF_TERM read_bson_timestamp(ErlNifEnv* env, Decoder* d,
+static inline ERL_NIF_TERM read_bson_timestamp(ErlNifEnv *env, Decoder *d,
                                                int64_t timestamp) {
     if (d->return_json) {
         return enif_make_int64(env, timestamp);
@@ -310,7 +309,7 @@ static inline ERL_NIF_TERM read_bson_timestamp(ErlNifEnv* env, Decoder* d,
     return ret;
 }
 
-static inline ERL_NIF_TERM read_bson_utc(ErlNifEnv* env, Decoder* d,
+static inline ERL_NIF_TERM read_bson_utc(ErlNifEnv *env, Decoder *d,
                                          int64_t timestamp) {
     if (d->return_json) {
         return enif_make_int64(env, timestamp);
@@ -323,10 +322,10 @@ static inline ERL_NIF_TERM read_bson_utc(ErlNifEnv* env, Decoder* d,
     return ret;
 }
 
-ERL_NIF_TERM decode_init(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
-    Decoder* d;
+ERL_NIF_TERM decode_init(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
+    Decoder *d;
 
-    cbson_st* st = (cbson_st*)enif_priv_data(env);
+    cbson_st *st = (cbson_st *)enif_priv_data(env);
     ERL_NIF_TERM tmp_argv[4];
     ERL_NIF_TERM opts;
     ERL_NIF_TERM val;
@@ -380,7 +379,7 @@ ERL_NIF_TERM decode_init(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
     if (d->len < 5) {
         return make_error(st, env, "invalid_bson");
     }
-    int32_t len = *(int32_t*)(d->p + d->i);
+    int32_t len = *(int32_t *)(d->p + d->i);
     d->i += 4;
     int32_t end = d->i + len - 5;
 
@@ -403,9 +402,9 @@ ERL_NIF_TERM decode_init(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
         goto done;                     \
     }
 
-ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
-    Decoder* d;
-    cbson_st* st = (cbson_st*)enif_priv_data(env);
+ERL_NIF_TERM decode_iter(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[]) {
+    Decoder *d;
+    cbson_st *st = (cbson_st *)enif_priv_data(env);
 
     ErlNifBinary bin;
 
@@ -413,7 +412,7 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
         return enif_make_badarg(env);
     } else if (!enif_inspect_binary(env, argv[0], &bin)) {
         return enif_make_badarg(env);
-    } else if (!enif_get_resource(env, argv[1], st->res_dec, (void**)&d)) {
+    } else if (!enif_get_resource(env, argv[1], st->res_dec, (void **)&d)) {
         return enif_make_badarg(env);
     } else if (!enif_is_list(env, argv[2])) {
         return enif_make_badarg(env);
@@ -421,6 +420,7 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
         return enif_make_badarg(env);
     }
 
+    d->env = env;
     d->arg = argv[0];
     ERL_NIF_TERM objs = argv[2];
     ERL_NIF_TERM curr = argv[3];
@@ -440,7 +440,7 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
         char curr_stack = dec_curr(d);
         int st_end = dec_curr_end(d);
 
-        uint8_t type = *(uint8_t*)(d->p + d->i);
+        uint8_t type = *(uint8_t *)(d->p + d->i);
         d->i++;
         if (type == 0x0 && st_end == d->i - 1) {
             if (curr_stack == st_doc) {
@@ -478,11 +478,11 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
             switch (type) {
                 case BSON_DOUBLE:
                     ASSERT_LEN(d, 8, "invalid_double");
-                    unsigned char* p = d->p + d->i;
+                    unsigned char *p = d->p + d->i;
                     if (memcmp(p, nan1, 6) != 0) {
-                        val = enif_make_double(env, *(double*)p);
+                        val = enif_make_double(env, *(double *)p);
                     } else {
-                        unsigned char* f = p + 6;
+                        unsigned char *f = p + 6;
                         if (memcmp(f, nan1 + 6, 2) == 0) {
                             val = d->atoms->atom_nan;
                         } else if (memcmp(f, nan2 + 6, 2) == 0) {
@@ -492,7 +492,7 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
                         } else if (memcmp(f, ninf + 6, 2) == 0) {
                             val = d->atoms->atom_ninf;
                         } else {
-                            val = enif_make_double(env, *(double*)p);
+                            val = enif_make_double(env, *(double *)p);
                         }
                     }
                     d->i += 8;
@@ -500,7 +500,7 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
                 case BSON_STRING:
                 case BSON_SYMBOL:
                     ASSERT_LEN(d, 4, "invalid_string");
-                    len = *(int32_t*)(d->p + d->i);
+                    len = *(int32_t *)(d->p + d->i);
                     d->i += 4;
                     ASSERT_LEN(d, len, "invalid_string");
                     ASSERT_STRING_LEN(d, len - 1, "invalid_string");
@@ -509,7 +509,7 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
                     break;
                 case BSON_DOCUMENT:
                     ASSERT_LEN(d, 4, "invalid_doc");
-                    len = *(int32_t*)(d->p + d->i);
+                    len = *(int32_t *)(d->p + d->i);
                     len -= 5;
                     d->i += 4;
                     ASSERT_LEN(d, len + 1, "invalid_doc");
@@ -522,7 +522,7 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
                     break;
                 case BSON_ARRAY:
                     ASSERT_LEN(d, 4, "invalid_doc");
-                    len = *(int32_t*)(d->p + d->i);
+                    len = *(int32_t *)(d->p + d->i);
                     len -= 5;
                     d->i += 4;
                     ASSERT_LEN(d, len + 1, "invalid_doc");
@@ -535,8 +535,8 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
                     break;
                 case BSON_BINARY:
                     ASSERT_LEN(d, 5, "invalid_binary");
-                    len = *(int32_t*)(d->p + d->i);
-                    uint8_t subtype = *(uint8_t*)(d->p + d->i + 4);
+                    len = *(int32_t *)(d->p + d->i);
+                    uint8_t subtype = *(uint8_t *)(d->p + d->i + 4);
                     d->i += 5;
                     ASSERT_LEN(d, len, "invalid_binary");
                     val = read_bson_binary(env, d, subtype, len);
@@ -549,13 +549,13 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
                     break;
                 case BSON_BOOL:
                     ASSERT_LEN(d, 1, "invalid_bool");
-                    int8_t boolean = *(int8_t*)(d->p + d->i);
+                    int8_t boolean = *(int8_t *)(d->p + d->i);
                     val = boolean ? d->atoms->atom_true : d->atoms->atom_false;
                     d->i += 1;
                     break;
                 case BSON_UTC:
                     ASSERT_LEN(d, 8, "invalid_utc");
-                    int64_t ms = *(int64_t*)(d->p + d->i);
+                    int64_t ms = *(int64_t *)(d->p + d->i);
                     val = read_bson_utc(env, d, ms);
                     d->i += 8;
                     break;
@@ -574,19 +574,19 @@ ERL_NIF_TERM decode_iter(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
                     break;
                 case BSON_INT32:
                     ASSERT_LEN(d, 4, "invalid_int32");
-                    int int32 = *(int32_t*)(d->p + d->i);
+                    int int32 = *(int32_t *)(d->p + d->i);
                     val = enif_make_int(env, int32);
                     d->i += 4;
                     break;
                 case BSON_TIMESTAMP:
                     ASSERT_LEN(d, 8, "invalid_timestamp");
-                    int64_t ts = *(int64_t*)(d->p + d->i);
+                    int64_t ts = *(int64_t *)(d->p + d->i);
                     val = read_bson_timestamp(env, d, ts);
                     d->i += 8;
                     break;
                 case BSON_INT64:
                     ASSERT_LEN(d, 8, "invalid_int64");
-                    int64_t int64 = *(int64_t*)(d->p + d->i);
+                    int64_t int64 = *(int64_t *)(d->p + d->i);
                     val = enif_make_int64(env, int64);
                     d->i += 8;
                     break;
